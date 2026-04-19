@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ashish Lakhmani | Data Analytics Expert</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <div class="nav-logo">AL<span class="dot">.</span></div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#dashboards">Dashboards</a></li>
+      <li><a href="#contact" class="btn-nav">Contact</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow"><span class="badge">Open to Opportunities</span></p>
+    <h1>Ashish <span class="gradient-text">Lakhmani</span></h1>
+    <h2 class="hero-subtitle">Senior Data Analyst &amp; BI Engineer</h2>
+    <p class="hero-desc">
+      Transforming complex data into executive-ready insights with <strong>Looker (GCP)</strong> and <strong>Power BI</strong>.
+      7+ years building enterprise dashboards, semantic data models, and AI-powered analytics pipelines.
+    </p>
+    <div class="hero-tags">
+      <span><i class="fab fa-google"></i> Looker &amp; LookML</span>
+      <span><i class="fas fa-chart-bar"></i> Power BI &amp; DAX</span>
+      <span><i class="fas fa-database"></i> BigQuery &amp; SQL</span>
+      <span><i class="fab fa-python"></i> Python ETL</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#dashboards" class="btn-primary">View Live Demos</a>
+      <a href="#contact" class="btn-secondary">Get in Touch</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="chart-preview">
+      <canvas id="heroChart"></canvas>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card"><span class="stat-num">7+</span><span class="stat-label">Years Experience</span></div>
+      <div class="stat-card"><span class="stat-num">50+</span><span class="stat-label">Dashboards Built</span></div>
+      <div class="stat-card"><span class="stat-num">3</span><span class="stat-label">Industries</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">About Me</span>
+      <h2>Data Storyteller. BI Architect. GCP Enthusiast.</h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          I'm a <strong>Senior Data Analyst</strong> currently at <strong>Hylife Foods</strong>, where I architect scalable LookML semantic models and self-service analytics platforms on Google Cloud Platform. Previously, I delivered Power BI intelligence solutions at Wawanesa Insurance and Clearwater Analytics.
+        </p>
+        <p>
+          I hold a <strong>Master's in Computer Science</strong> (GPA 3.9, University of Manitoba) and a <strong>Master's in Quantitative Finance</strong> (GPA 3.92, University of Utah) — a unique combination that lets me speak the language of both engineering and business.
+        </p>
+        <p>
+          Beyond analytics, I've taught <strong>Power BI, SQL, and Data Analytics</strong> at the University of Manitoba and Robertson College, helping hundreds of professionals upskill in data.
+        </p>
+        <div class="edu-cards">
+          <div class="edu-card">
+            <i class="fas fa-graduation-cap"></i>
+            <div>
+              <strong>M.S. Computer Science</strong>
+              <span>University of Manitoba &bull; GPA 3.90</span>
+            </div>
+          </div>
+          <div class="edu-card">
+            <i class="fas fa-chart-line"></i>
+            <div>
+              <strong>M.S. Quantitative Finance</strong>
+              <span>University of Utah &bull; GPA 3.92</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="about-metrics">
+        <div class="metric-ring">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" class="ring-bg"/>
+            <circle cx="60" cy="60" r="50" class="ring-fill ring-looker" stroke-dasharray="283" stroke-dashoffset="57"/>
+          </svg>
+          <div class="ring-label"><span>80%</span><small>Looker / GCP</small></div>
+        </div>
+        <div class="metric-ring">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" class="ring-bg"/>
+            <circle cx="60" cy="60" r="50" class="ring-fill ring-pbi" stroke-dasharray="283" stroke-dashoffset="43"/>
+          </svg>
+          <div class="ring-label"><span>85%</span><small>Power BI / DAX</small></div>
+        </div>
+        <div class="metric-ring">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" class="ring-bg"/>
+            <circle cx="60" cy="60" r="50" class="ring-fill ring-sql" stroke-dasharray="283" stroke-dashoffset="28"/>
+          </svg>
+          <div class="ring-label"><span>90%</span><small>SQL / BigQuery</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="section section-alt" id="skills">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Technical Stack</span>
+      <h2>End-to-End BI &amp; Analytics Expertise</h2>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-category">
+        <div class="skill-icon looker-icon"><i class="fas fa-eye"></i></div>
+        <h3>Looker &amp; GCP</h3>
+        <ul>
+          <li>LookML semantic modeling</li>
+          <li>BigQuery optimization</li>
+          <li>Looker Studio dashboards</li>
+          <li>AI/ML model integration</li>
+          <li>GCP IAM &amp; access admin</li>
+        </ul>
+      </div>
+      <div class="skill-category">
+        <div class="skill-icon pbi-icon"><i class="fas fa-chart-pie"></i></div>
+        <h3>Power BI</h3>
+        <ul>
+          <li>DAX measures &amp; calculated tables</li>
+          <li>Power Query / M language</li>
+          <li>Row-Level Security (RLS)</li>
+          <li>Executive &amp; operational reports</li>
+          <li>Live ML model dashboards</li>
+        </ul>
+      </div>
+      <div class="skill-category">
+        <div class="skill-icon sql-icon"><i class="fas fa-database"></i></div>
+        <h3>Data Engineering</h3>
+        <ul>
+          <li>Complex SQL &amp; stored procedures</li>
+          <li>ETL pipeline development</li>
+          <li>Data quality &amp; governance</li>
+          <li>Python automation scripts</li>
+          <li>AWS data services</li>
+        </ul>
+      </div>
+      <div class="skill-category">
+        <div class="skill-icon analytics-icon"><i class="fas fa-brain"></i></div>
+        <h3>Analytics &amp; Strategy</h3>
+        <ul>
+          <li>Descriptive &amp; diagnostic analytics</li>
+          <li>Executive stakeholder reporting</li>
+          <li>Statistical methods</li>
+          <li>Credit risk analysis</li>
+          <li>AI agent development</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="section" id="experience">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Career</span>
+      <h2>Professional Experience</h2>
+    </div>
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-dot current"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div>
+              <h3>Sr. Data Analyst</h3>
+              <span class="company">Hylife Foods &bull; Steinbach, MB</span>
+            </div>
+            <span class="date current-badge">Jan 2025 – Present</span>
+          </div>
+          <ul>
+            <li>Architecting scalable <strong>LookML semantic models</strong> and Looker explores for enterprise BI on GCP — reducing report development time by 60%.</li>
+            <li>Built <strong>AI Agents</strong> for self-service data models, enabling non-technical users to query petabyte-scale datasets autonomously.</li>
+            <li>Designed and enforced <strong>data quality &amp; governance frameworks</strong> across feed and plant operations; administers GCP IAM and Looker access controls.</li>
+            <li>Engineered complex SQL pipelines for high-performance data transformation, supporting strategic decisions across the supply chain.</li>
+          </ul>
+          <div class="tech-tags"><span>Looker</span><span>LookML</span><span>BigQuery</span><span>GCP</span><span>SQL</span></div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div>
+              <h3>Data Analyst (Contract)</h3>
+              <span class="company">Wawanesa Insurance &bull; Winnipeg, MB</span>
+            </div>
+            <span class="date">Aug 2024 – Jan 2025</span>
+          </div>
+          <ul>
+            <li>Built <strong>interactive Power BI dashboards</strong> analysing customer demographics, tenure, and churn — directly informing Customer Experience strategy.</li>
+            <li>Developed a live <strong>ML model performance &amp; usage dashboard</strong> in Power BI, giving stakeholders real-time visibility into model health.</li>
+            <li>Uncovered fraudulent address misrepresentation through <strong>investigative SQL analysis</strong>, saving hundreds of thousands in improper claims.</li>
+          </ul>
+          <div class="tech-tags"><span>Power BI</span><span>DAX</span><span>SQL</span><span>Machine Learning</span></div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div>
+              <h3>Data Analytics Instructor</h3>
+              <span class="company">University of Manitoba &amp; Robertson College &bull; Winnipeg, MB</span>
+            </div>
+            <span class="date">Jan 2024 – Oct 2024</span>
+          </div>
+          <ul>
+            <li>Taught <strong>Power BI, SQL, Excel, Data Visualization, and Statistical Methods</strong> to 200+ students and working professionals.</li>
+          </ul>
+          <div class="tech-tags"><span>Power BI</span><span>SQL</span><span>Excel</span><span>Data Viz</span></div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div>
+              <h3>Senior Data Analyst</h3>
+              <span class="company">Clearwater Analytics LLC &bull; Boise, USA</span>
+            </div>
+            <span class="date">Nov 2019 – Apr 2023</span>
+          </div>
+          <ul>
+            <li>Delivered <strong>Power BI executive dashboards</strong> for product usage and gap analysis to C-suite stakeholders at a leading $4B fintech.</li>
+            <li>Engineered Python/SQL ETL pipelines, cutting data processing time by 40% and ensuring regulatory compliance.</li>
+            <li>Built a <strong>Python automation module</strong> that reduced manual report error-resolution workload by 70%.</li>
+          </ul>
+          <div class="tech-tags"><span>Power BI</span><span>Python</span><span>SQL</span><span>ETL</span><span>Java</span></div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div>
+              <h3>Data Analyst – Credit Risk</h3>
+              <span class="company">Goldman Sachs (via PrincePerelson) &bull; Salt Lake City, USA</span>
+            </div>
+            <span class="date">May 2019 – Nov 2019</span>
+          </div>
+          <ul>
+            <li>Assessed and monitored credit risk on institutional deals; automated Hedge Fund AUM extraction with VBA, SQL, and Python.</li>
+          </ul>
+          <div class="tech-tags"><span>Python</span><span>SQL</span><span>VBA</span><span>Credit Risk</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARDS -->
+<section class="section section-alt" id="dashboards">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Live Demos</span>
+      <h2>Interactive Dashboard Showcases</h2>
+      <p class="section-desc">Click to explore full interactive demos simulating real enterprise BI environments.</p>
+    </div>
+    <div class="dashboard-cards">
+
+      <div class="dashboard-card looker-card">
+        <div class="dashboard-preview">
+          <div class="db-toolbar looker-toolbar">
+            <div class="db-logo"><i class="fas fa-eye"></i> Looker</div>
+            <div class="db-tabs">
+              <span class="db-tab active">Sales Overview</span>
+              <span class="db-tab">Operations</span>
+            </div>
+          </div>
+          <div class="db-kpis">
+            <div class="db-kpi"><span class="kpi-val">$4.2M</span><span class="kpi-lbl">Total Revenue</span><span class="kpi-delta up">+18%</span></div>
+            <div class="db-kpi"><span class="kpi-val">12,847</span><span class="kpi-lbl">Orders</span><span class="kpi-delta up">+9%</span></div>
+            <div class="db-kpi"><span class="kpi-val">$326</span><span class="kpi-lbl">Avg Order</span><span class="kpi-delta down">-3%</span></div>
+          </div>
+          <canvas id="lookerPreviewChart" height="100"></canvas>
+        </div>
+        <div class="dashboard-info">
+          <div class="db-badge looker-badge"><i class="fab fa-google"></i> Google Cloud Looker</div>
+          <h3>Enterprise Sales Analytics</h3>
+          <p>LookML-driven explore with real-time BigQuery data: revenue trends, order performance, regional breakdowns, and drill-through capabilities.</p>
+          <div class="db-features">
+            <span><i class="fas fa-check"></i> LookML semantic layer</span>
+            <span><i class="fas fa-check"></i> BigQuery backend</span>
+            <span><i class="fas fa-check"></i> Cross-filter drill-through</span>
+            <span><i class="fas fa-check"></i> Scheduled data delivery</span>
+          </div>
+          <a href="dashboards/looker-demo.html" class="btn-primary" target="_blank">Open Looker Demo <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <div class="dashboard-card pbi-card">
+        <div class="dashboard-preview">
+          <div class="db-toolbar pbi-toolbar">
+            <div class="db-logo pbi-logo"><i class="fas fa-chart-bar"></i> Power BI</div>
+            <div class="db-tabs">
+              <span class="db-tab active">Customer Analytics</span>
+              <span class="db-tab">Churn Model</span>
+            </div>
+          </div>
+          <div class="db-kpis">
+            <div class="db-kpi"><span class="kpi-val">98,240</span><span class="kpi-lbl">Customers</span><span class="kpi-delta up">+12%</span></div>
+            <div class="db-kpi"><span class="kpi-val">6.4%</span><span class="kpi-lbl">Churn Rate</span><span class="kpi-delta down">-2%</span></div>
+            <div class="db-kpi"><span class="kpi-val">4.7</span><span class="kpi-lbl">Avg Tenure (yr)</span><span class="kpi-delta up">+0.3</span></div>
+          </div>
+          <canvas id="pbiPreviewChart" height="100"></canvas>
+        </div>
+        <div class="dashboard-info">
+          <div class="db-badge pbi-badge"><i class="fas fa-chart-bar"></i> Microsoft Power BI</div>
+          <h3>Customer Intelligence Dashboard</h3>
+          <p>Insurance-grade customer analytics: demographic segmentation, churn prediction model monitoring, tenure analysis, and executive KPI scorecards with DAX measures.</p>
+          <div class="db-features">
+            <span><i class="fas fa-check"></i> Advanced DAX measures</span>
+            <span><i class="fas fa-check"></i> Row-Level Security</span>
+            <span><i class="fas fa-check"></i> ML model monitoring</span>
+            <span><i class="fas fa-check"></i> Slicer &amp; cross-filter</span>
+          </div>
+          <a href="dashboards/powerbi-demo.html" class="btn-primary pbi-btn" target="_blank">Open Power BI Demo <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section" id="contact">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Contact</span>
+      <h2>Let's Build Something Great</h2>
+      <p class="section-desc">Available for full-time roles, consulting, and freelance BI projects.</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fas fa-envelope"></i>
+          <div><strong>Email</strong><a href="mailto:ashishlakhmani@hotmail.com">ashishlakhmani@hotmail.com</a></div>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-phone"></i>
+          <div><strong>Phone</strong><a href="tel:7166023390">(716) 602-3390</a></div>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <div><strong>Location</strong><span>Winnipeg, MB, Canada</span></div>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-graduation-cap"></i>
+          <div><strong>Google Scholar</strong><a href="#">Research Profile</a></div>
+        </div>
+        <div class="expertise-list">
+          <h4>Available for:</h4>
+          <span>Looker / LookML Consulting</span>
+          <span>Power BI Development</span>
+          <span>GCP Data Architecture</span>
+          <span>BI Training &amp; Workshops</span>
+        </div>
+      </div>
+      <form class="contact-form" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <input type="text" placeholder="Your Name" required />
+        </div>
+        <div class="form-group">
+          <input type="email" placeholder="Your Email" required />
+        </div>
+        <div class="form-group">
+          <select>
+            <option value="">Project Type</option>
+            <option>Looker / GCP Dashboard</option>
+            <option>Power BI Dashboard</option>
+            <option>Data Architecture</option>
+            <option>BI Training</option>
+            <option>Full-time Role</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <textarea placeholder="Tell me about your project..." rows="5" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary full-width">Send Message <i class="fas fa-paper-plane"></i></button>
+        <div id="form-success" class="form-success" style="display:none">Message sent! I'll get back to you within 24 hours.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <p>© 2025 Ashish Lakhmani &bull; Senior Data Analyst &bull; Looker &amp; Power BI Expert</p>
+    <p class="footer-sub">Built with data. Driven by insight.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

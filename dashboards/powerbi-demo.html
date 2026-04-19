@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Power BI Demo – Customer Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #141414; --panel: #1c1c1c; --panel2: #232323;
+      --border: #2e2e2e; --text: #f3f3f3; --muted: #888;
+      --yellow: #f2c811; --orange: #e8721c; --blue: #118dff;
+      --green: #107c10; --green-light: #14a614;
+      --red: #d13438; --purple: #8764b8; --teal: #01b8aa;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* RIBBON */
+    .ribbon {
+      background: #1c1c1c; border-bottom: 1px solid #333;
+      display: flex; align-items: center; height: 44px; padding: 0 1rem; gap: 1.5rem; flex-shrink: 0;
+    }
+    .ribbon-logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 0.95rem; color: var(--yellow); flex-shrink: 0; }
+    .ribbon-logo i { font-size: 1rem; }
+    .ribbon-tabs { display: flex; gap: 0; }
+    .ribbon-tab { padding: 0 1rem; height: 44px; display: flex; align-items: center; font-size: 0.78rem; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+    .ribbon-tab.active { color: var(--text); border-bottom-color: var(--yellow); }
+    .ribbon-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+    .ribbon-btn {
+      background: var(--yellow); color: #000; border: none; padding: 0.3rem 0.85rem;
+      border-radius: 3px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .ribbon-icon { color: var(--muted); font-size: 0.85rem; cursor: pointer; padding: 0.25rem; }
+    .ribbon-icon:hover { color: var(--text); }
+
+    /* SUB-TOOLBAR */
+    .subtoolbar {
+      background: #181818; border-bottom: 1px solid #2a2a2a;
+      display: flex; align-items: center; padding: 0 1rem; height: 36px; gap: 1rem; flex-shrink: 0;
+    }
+    .page-tabs { display: flex; gap: 0; }
+    .page-tab { padding: 0 1rem; height: 36px; display: flex; align-items: center; font-size: 0.73rem; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+    .page-tab.active { color: var(--text); border-bottom-color: var(--yellow); background: rgba(242,200,17,0.06); }
+    .slicer-row { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+    .slicer {
+      background: var(--panel2); border: 1px solid var(--border);
+      padding: 0.25rem 0.65rem; border-radius: 3px; font-size: 0.72rem; color: var(--text);
+      display: flex; align-items: center; gap: 0.4rem; cursor: pointer;
+    }
+    .slicer i { color: var(--muted); font-size: 0.65rem; }
+    .slicer.active-filter { border-color: var(--yellow); color: var(--yellow); }
+
+    /* CANVAS */
+    .canvas { flex: 1; overflow: auto; background: #111; padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem; }
+
+    /* KPI CARDS */
+    .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.75rem; }
+    .kpi-card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
+      padding: 0.85rem 1rem; position: relative;
+    }
+    .kpi-card-title { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+    .kpi-card-value { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+    .kpi-card-delta { font-size: 0.68rem; margin-top: 0.35rem; display: flex; align-items: center; gap: 0.25rem; }
+    .delta-up { color: var(--green-light); }
+    .delta-down { color: var(--red); }
+    .kpi-sparkline { position: absolute; bottom: 0; right: 0; opacity: 0.4; }
+
+    /* MAIN GRID */
+    .main-grid { display: grid; grid-template-columns: 2fr 1.2fr 1fr; gap: 0.85rem; }
+    .side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+
+    /* VISUAL PANELS */
+    .visual {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
+      padding: 0.85rem; overflow: hidden;
+    }
+    .visual:hover { border-color: #444; }
+    .visual-title {
+      font-size: 0.75rem; font-weight: 600; color: var(--text); margin-bottom: 0.6rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .visual-subtitle { font-size: 0.65rem; color: var(--muted); font-weight: 400; margin-top: 0.1rem; }
+    .visual-menu { font-size: 0.65rem; color: var(--muted); cursor: pointer; display: flex; gap: 0.4rem; }
+    .visual-menu i { padding: 0.15rem; }
+
+    /* DAX LABEL */
+    .dax-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      background: rgba(242,200,17,0.1); border: 1px solid rgba(242,200,17,0.2);
+      color: var(--yellow); font-size: 0.62rem; padding: 0.1rem 0.45rem; border-radius: 3px;
+    }
+
+    /* GAUGE */
+    .gauge-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.5rem 0; }
+    .gauge-value { font-size: 2rem; font-weight: 700; color: var(--yellow); margin-top: -10px; }
+    .gauge-label { font-size: 0.7rem; color: var(--muted); margin-top: 0.25rem; }
+    .gauge-bar { width: 100%; height: 8px; background: var(--border); border-radius: 4px; margin: 0.5rem 0; overflow: hidden; }
+    .gauge-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--green-light), var(--yellow), var(--red)); }
+
+    /* SEGMENT TABLE */
+    .seg-table { width: 100%; font-size: 0.72rem; border-collapse: collapse; }
+    .seg-table th { color: var(--muted); text-align: left; padding: 0.35rem 0.5rem; font-weight: 500; border-bottom: 1px solid var(--border); }
+    .seg-table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .seg-table tr:last-child td { border-bottom: none; }
+    .seg-bar { height: 5px; border-radius: 2px; background: var(--blue); display: inline-block; }
+    .trend-up { color: var(--green-light); font-size: 0.65rem; }
+    .trend-down { color: var(--red); font-size: 0.65rem; }
+
+    /* MAP PLACEHOLDER */
+    .map-placeholder {
+      background: #0d1a2e; border-radius: 4px; height: 100%; min-height: 140px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .map-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); opacity: 0.8; }
+    .map-dot.pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.8} 50%{transform:scale(1.8);opacity:0.3} }
+    .map-dot.lg { width: 14px; height: 14px; background: var(--yellow); }
+    .map-label { font-size: 0.65rem; color: var(--muted); margin-top: 0.5rem; }
+
+    /* RLS BADGE */
+    .rls-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      background: rgba(16,124,16,0.12); border: 1px solid rgba(16,124,16,0.25);
+      color: var(--green-light); font-size: 0.62rem; padding: 0.15rem 0.5rem; border-radius: 3px;
+    }
+
+    /* BACK LINK */
+    .back-link {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--yellow); color: #000;
+      padding: 0.6rem 1.2rem; border-radius: 4px; font-size: 0.8rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.4rem; z-index: 100;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- RIBBON -->
+<div class="ribbon">
+  <div class="ribbon-logo"><i class="fas fa-chart-bar"></i> Power BI</div>
+  <div class="ribbon-tabs">
+    <div class="ribbon-tab">File</div>
+    <div class="ribbon-tab active">Home</div>
+    <div class="ribbon-tab">Insert</div>
+    <div class="ribbon-tab">Modeling</div>
+    <div class="ribbon-tab">View</div>
+  </div>
+  <div class="ribbon-right">
+    <span class="dax-badge"><i class="fas fa-code"></i> DAX Active</span>
+    <span class="rls-badge"><i class="fas fa-lock"></i> RLS: Analyst Role</span>
+    <button class="ribbon-btn"><i class="fas fa-share-alt"></i> Publish</button>
+    <i class="fas fa-question-circle ribbon-icon"></i>
+  </div>
+</div>
+
+<!-- SUB-TOOLBAR -->
+<div class="subtoolbar">
+  <div class="page-tabs">
+    <div class="page-tab active">Customer Analytics</div>
+    <div class="page-tab">Churn Model</div>
+    <div class="page-tab">Demographics</div>
+    <div class="page-tab">Executive Summary</div>
+  </div>
+  <div class="slicer-row">
+    <div class="slicer active-filter"><i class="fas fa-calendar"></i> FY 2024 <i class="fas fa-caret-down"></i></div>
+    <div class="slicer"><i class="fas fa-map-marker-alt"></i> All Provinces <i class="fas fa-caret-down"></i></div>
+    <div class="slicer"><i class="fas fa-user-tag"></i> All Segments <i class="fas fa-caret-down"></i></div>
+    <div class="slicer"><i class="fas fa-building"></i> Personal Lines <i class="fas fa-caret-down"></i></div>
+  </div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas">
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-card-title">Total Customers</div>
+      <div class="kpi-card-value" style="color:#118dff">98,240</div>
+      <div class="kpi-card-delta delta-up"><i class="fas fa-arrow-up"></i> +12.3% YoY</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card-title">Churn Rate</div>
+      <div class="kpi-card-value" style="color:#f2c811">6.4%</div>
+      <div class="kpi-card-delta delta-up"><i class="fas fa-arrow-down"></i> -2.1pp YoY</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card-title">Avg Tenure</div>
+      <div class="kpi-card-value" style="color:#01b8aa">4.7 yrs</div>
+      <div class="kpi-card-delta delta-up"><i class="fas fa-arrow-up"></i> +0.3 yrs</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card-title">Retention Rate</div>
+      <div class="kpi-card-value" style="color:#14a614">93.6%</div>
+      <div class="kpi-card-delta delta-up"><i class="fas fa-arrow-up"></i> +2.1pp YoY</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card-title">Avg Premium</div>
+      <div class="kpi-card-value" style="color:#e8721c">$1,842</div>
+      <div class="kpi-card-delta delta-up"><i class="fas fa-arrow-up"></i> +4.8% YoY</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card-title">At-Risk Customers</div>
+      <div class="kpi-card-value" style="color:#d13438">15,329</div>
+      <div class="kpi-card-delta delta-down"><i class="fas fa-arrow-down"></i> High priority</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- CHURN TREND -->
+    <div class="visual">
+      <div class="visual-title">
+        <div>Customer Retention vs Churn Trend
+          <div class="visual-subtitle">CALCULATE([Churn Rate], DATESINPERIOD(...))</div>
+        </div>
+        <div class="visual-menu"><i class="fas fa-ellipsis-h"></i></div>
+      </div>
+      <canvas id="churnTrendChart" height="130"></canvas>
+    </div>
+
+    <!-- CHURN DONUT -->
+    <div class="visual">
+      <div class="visual-title">Customer Status Distribution <div class="visual-menu"><i class="fas fa-ellipsis-h"></i></div></div>
+      <canvas id="churnDonut" height="155"></canvas>
+    </div>
+
+    <!-- GAUGE -->
+    <div class="visual">
+      <div class="visual-title">Churn Risk Score <div class="visual-menu"><i class="fas fa-ellipsis-h"></i></div></div>
+      <div class="gauge-container">
+        <canvas id="gaugeChart" height="100"></canvas>
+        <div class="gauge-value">6.4%</div>
+        <div class="gauge-label">vs 8.5% target threshold</div>
+        <div class="gauge-bar"><div class="gauge-fill" style="width:75%"></div></div>
+        <div style="display:flex;justify-content:space-between;width:100%;font-size:0.62rem;color:var(--muted);margin-top:0.2rem"><span>0%</span><span>Target: 8.5%</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDE GRID -->
+  <div class="side-grid">
+
+    <!-- DEMOGRAPHICS BAR -->
+    <div class="visual">
+      <div class="visual-title">Customers by Age Band <div class="visual-menu"><i class="fas fa-ellipsis-h"></i></div></div>
+      <canvas id="ageBandChart" height="130"></canvas>
+    </div>
+
+    <!-- TENURE + PREMIUM -->
+    <div class="visual">
+      <div class="visual-title">Tenure vs Premium (scatter) <div class="visual-menu"><i class="fas fa-ellipsis-h"></i></div></div>
+      <canvas id="scatterChart" height="130"></canvas>
+    </div>
+
+    <!-- SEGMENT TABLE -->
+    <div class="visual">
+      <div class="visual-title">Segment Performance <div class="dax-badge"><i class="fas fa-code"></i> DAX</div></div>
+      <table class="seg-table">
+        <thead><tr><th>Segment</th><th>Customers</th><th>Share</th><th>Churn</th><th>Trend</th></tr></thead>
+        <tbody>
+          <tr><td>Homeowners</td><td>34,280</td><td><div class="seg-bar" style="width:55px"></div></td><td>4.2%</td><td class="trend-up">↓ Improving</td></tr>
+          <tr><td>Auto + Home</td><td>28,140</td><td><div class="seg-bar" style="width:44px;background:#01b8aa"></div></td><td>5.8%</td><td class="trend-up">↓ Improving</td></tr>
+          <tr><td>Auto Only</td><td>21,920</td><td><div class="seg-bar" style="width:34px;background:#f2c811"></div></td><td>9.1%</td><td class="trend-down">↑ At Risk</td></tr>
+          <tr><td>Tenants</td><td>13,900</td><td><div class="seg-bar" style="width:22px;background:#e8721c"></div></td><td>11.4%</td><td class="trend-down">↑ At Risk</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MAP -->
+    <div class="visual">
+      <div class="visual-title">Geographic Distribution <div class="visual-menu"><i class="fas fa-ellipsis-h"></i></div></div>
+      <div class="map-placeholder">
+        <div class="map-dot lg pulse" style="top:32%;left:42%"></div>
+        <div class="map-dot pulse" style="top:28%;left:60%"></div>
+        <div class="map-dot" style="top:48%;left:38%"></div>
+        <div class="map-dot" style="top:55%;left:55%"></div>
+        <div class="map-dot" style="top:40%;left:72%"></div>
+        <div class="map-dot" style="top:65%;left:62%"></div>
+        <canvas id="mapChart" height="120" style="width:100%;opacity:0.6"></canvas>
+        <div class="map-label">Manitoba · Saskatchewan · Ontario · BC</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const G = '#2e2e2e', T = '#888';
+const tip = { backgroundColor: '#1c1c1c', borderColor: '#333', borderWidth: 1 };
+
+// Churn Trend
+new Chart(document.getElementById('churnTrendChart'), {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [
+      { label: 'Retained', data: [91.2,91.5,92.0,91.8,92.4,92.8,93.1,92.9,93.4,93.5,93.7,93.6], borderColor: '#14a614', backgroundColor: 'rgba(20,166,20,0.07)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2 },
+      { label: 'Churned', data: [8.8,8.5,8.0,8.2,7.6,7.2,6.9,7.1,6.6,6.5,6.3,6.4], borderColor: '#d13438', backgroundColor: 'rgba(209,52,56,0.06)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: T, font: { size: 10 }, boxWidth: 10 } }, tooltip: tip },
+    scales: {
+      x: { ticks: { color: T, font: { size: 9 } }, grid: { color: G } },
+      y: { ticks: { color: T, font: { size: 9 }, callback: v => v + '%' }, grid: { color: G }, min: 0, max: 100 }
+    }
+  }
+});
+
+// Churn Donut
+new Chart(document.getElementById('churnDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Retained (93.6%)', 'At-Risk (15.6%)', 'Churned (6.4%)'],
+    datasets: [{ data: [78, 15.6, 6.4], backgroundColor: ['#14a614','#f2c811','#d13438'], borderWidth: 0, hoverOffset: 5 }]
+  },
+  options: { responsive: true, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { color: T, font: { size: 9 }, boxWidth: 10, padding: 8 } }, tooltip: tip } }
+});
+
+// Gauge
+new Chart(document.getElementById('gaugeChart'), {
+  type: 'doughnut',
+  data: {
+    datasets: [{ data: [6.4, 93.6], backgroundColor: ['#f2c811','#232323'], borderWidth: 0, circumference: 180, rotation: 270 }]
+  },
+  options: { responsive: true, cutout: '72%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+});
+
+// Age Band
+new Chart(document.getElementById('ageBandChart'), {
+  type: 'bar',
+  data: {
+    labels: ['18–25','26–35','36–45','46–55','56–65','65+'],
+    datasets: [{ label: 'Customers', data: [6200, 18400, 24800, 22100, 16900, 9840], backgroundColor: '#118dff', borderRadius: 3 }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: tip },
+    scales: {
+      x: { ticks: { color: T, font: { size: 9 }, callback: v => (v/1000)+'K' }, grid: { color: G } },
+      y: { ticks: { color: T, font: { size: 9 } }, grid: { display: false } }
+    }
+  }
+});
+
+// Scatter
+new Chart(document.getElementById('scatterChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'Personal Lines',
+      data: Array.from({length:50}, () => ({ x: +(Math.random()*10+0.5).toFixed(1), y: +(Math.random()*3000+500).toFixed(0) })),
+      backgroundColor: 'rgba(17,141,255,0.5)', pointRadius: 3
+    }, {
+      label: 'Commercial',
+      data: Array.from({length:20}, () => ({ x: +(Math.random()*8+1).toFixed(1), y: +(Math.random()*4000+1500).toFixed(0) })),
+      backgroundColor: 'rgba(242,200,17,0.6)', pointRadius: 3
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: T, font: { size: 9 }, boxWidth: 8 } }, tooltip: tip },
+    scales: {
+      x: { ticks: { color: T, font: { size: 9 } }, grid: { color: G }, title: { display: true, text: 'Tenure (yrs)', color: T, font: { size: 9 } } },
+      y: { ticks: { color: T, font: { size: 9 }, callback: v => '$'+v }, grid: { color: G }, title: { display: true, text: 'Premium ($)', color: T, font: { size: 9 } } }
+    }
+  }
+});
+
+// Map background bar chart
+new Chart(document.getElementById('mapChart'), {
+  type: 'bar',
+  data: {
+    labels: ['MB','SK','ON','BC','AB','QC'],
+    datasets: [{ data: [34280, 18420, 22100, 12840, 6400, 4200], backgroundColor: 'rgba(17,141,255,0.4)', borderRadius: 2 }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+    scales: {
+      x: { ticks: { color: '#555', font: { size: 8 } }, grid: { display: false } },
+      y: { display: false, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Looker Demo – Enterprise Sales Analytics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1a1f2e; --sidebar: #0f1420; --panel: #1e2537;
+      --border: #2a3349; --text: #e2e8f0; --muted: #6b7fa8;
+      --blue: #4285f4; --green: #34a853; --yellow: #fbbc04; --red: #ea4335;
+      --purple: #9b59b6;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* TOPBAR */
+    .topbar {
+      background: #0d1117; border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem; height: 52px; display: flex; align-items: center;
+      justify-content: space-between; flex-shrink: 0;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 1.5rem; }
+    .topbar-logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.05rem; color: var(--blue); }
+    .topbar-logo i { font-size: 1.1rem; }
+    .breadcrumb { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; }
+    .breadcrumb span { color: var(--text); }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .topbar-btn {
+      background: var(--blue); color: #fff; border: none; padding: 0.4rem 1rem;
+      border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .topbar-filters { display: flex; align-items: center; gap: 0.75rem; }
+    .filter-chip {
+      background: var(--panel); border: 1px solid var(--border);
+      padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.75rem; color: var(--text);
+      cursor: pointer; display: flex; align-items: center; gap: 0.35rem;
+    }
+    .filter-chip.active { border-color: var(--blue); color: var(--blue); }
+    .filter-chip i { font-size: 0.65rem; }
+
+    /* MAIN LAYOUT */
+    .main { display: flex; flex: 1; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 200px; background: var(--sidebar); border-right: 1px solid var(--border);
+      padding: 1rem 0; flex-shrink: 0;
+    }
+    .sidebar-section { padding: 0.5rem 1rem; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 1rem; }
+    .sidebar-item {
+      padding: 0.5rem 1rem; font-size: 0.82rem; color: var(--muted);
+      cursor: pointer; display: flex; align-items: center; gap: 0.6rem;
+      transition: background 0.15s;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+    .sidebar-item.active { background: rgba(66,133,244,0.12); color: var(--blue); border-right: 2px solid var(--blue); }
+    .sidebar-item i { width: 14px; font-size: 0.78rem; }
+
+    /* CONTENT */
+    .content { flex: 1; padding: 1.25rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+
+    /* DASHBOARD HEADER */
+    .dash-header { display: flex; align-items: center; justify-content: space-between; }
+    .dash-title { font-size: 1.2rem; font-weight: 700; color: #fff; }
+    .dash-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+    .dash-meta span { color: var(--green); }
+    .dash-actions { display: flex; gap: 0.6rem; }
+    .action-btn {
+      background: var(--panel); border: 1px solid var(--border);
+      color: var(--muted); padding: 0.35rem 0.75rem; border-radius: 6px;
+      font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;
+    }
+
+    /* KPI TILES */
+    .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+    .kpi-tile {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1rem; position: relative; overflow: hidden;
+    }
+    .kpi-tile::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .kpi-tile.blue::before { background: var(--blue); }
+    .kpi-tile.green::before { background: var(--green); }
+    .kpi-tile.yellow::before { background: var(--yellow); }
+    .kpi-tile.red::before { background: var(--red); }
+    .kpi-tile.purple::before { background: var(--purple); }
+    .kpi-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+    .kpi-value { font-size: 1.6rem; font-weight: 700; color: #fff; line-height: 1; }
+    .kpi-sub { font-size: 0.7rem; margin-top: 0.4rem; display: flex; align-items: center; gap: 0.3rem; }
+    .kpi-up { color: var(--green); }
+    .kpi-down { color: var(--red); }
+
+    /* CHART ROW */
+    .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+    .chart-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .chart-panel {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem;
+    }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .chart-title { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .chart-badge { font-size: 0.68rem; color: var(--muted); background: var(--bg); padding: 0.2rem 0.5rem; border-radius: 4px; }
+    .chart-toggle { display: flex; gap: 0.3rem; }
+    .toggle-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.68rem; cursor: pointer; }
+    .toggle-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(66,133,244,0.1); }
+
+    /* TABLE */
+    .table-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .table-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-title { font-size: 0.85rem; font-weight: 600; }
+    .table-search { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.75rem; font-size: 0.75rem; color: var(--text); width: 180px; outline: none; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--bg); }
+    th { padding: 0.65rem 1.25rem; text-align: left; font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    td { padding: 0.65rem 1.25rem; font-size: 0.82rem; border-top: 1px solid var(--border); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .status { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .status.won { background: rgba(52,168,83,0.15); color: var(--green); }
+    .status.active { background: rgba(66,133,244,0.15); color: var(--blue); }
+    .status.lost { background: rgba(234,67,53,0.15); color: var(--red); }
+    .bar-cell { display: flex; align-items: center; gap: 0.5rem; }
+    .mini-bar { height: 6px; border-radius: 3px; background: var(--blue); opacity: 0.7; }
+
+    /* LOOKER EXPLORE BADGE */
+    .explore-badge {
+      background: rgba(66,133,244,0.08); border: 1px solid rgba(66,133,244,0.2);
+      border-radius: 8px; padding: 0.6rem 1rem;
+      font-size: 0.75rem; color: var(--blue);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .explore-badge i { font-size: 0.8rem; }
+
+    /* BACK LINK */
+    .back-link {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--blue); color: #fff;
+      padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+      display: flex; align-items: center; gap: 0.4rem; z-index: 100;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><i class="fas fa-eye"></i> Looker</div>
+    <div class="breadcrumb"><i class="fas fa-th-large" style="font-size:0.7rem"></i> Dashboards <i class="fas fa-chevron-right" style="font-size:0.55rem;color:#3a4a6b"></i> <span>Sales Overview</span></div>
+  </div>
+  <div class="topbar-filters">
+    <div class="filter-chip active"><i class="fas fa-calendar"></i> Last 12 Months <i class="fas fa-caret-down"></i></div>
+    <div class="filter-chip"><i class="fas fa-map-marker-alt"></i> All Regions <i class="fas fa-caret-down"></i></div>
+    <div class="filter-chip"><i class="fas fa-tag"></i> All Products <i class="fas fa-caret-down"></i></div>
+  </div>
+  <div class="topbar-right">
+    <div class="explore-badge"><i class="fas fa-search-plus"></i> Explore from here</div>
+    <button class="topbar-btn"><i class="fas fa-share-alt"></i> Share</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">Dashboards</div>
+    <div class="sidebar-item active"><i class="fas fa-chart-line"></i> Sales Overview</div>
+    <div class="sidebar-item"><i class="fas fa-industry"></i> Operations</div>
+    <div class="sidebar-item"><i class="fas fa-users"></i> Customer 360</div>
+    <div class="sidebar-item"><i class="fas fa-box"></i> Inventory</div>
+    <div class="sidebar-section">Explores</div>
+    <div class="sidebar-item"><i class="fas fa-search"></i> Orders Explore</div>
+    <div class="sidebar-item"><i class="fas fa-search"></i> Customers</div>
+    <div class="sidebar-item"><i class="fas fa-search"></i> Products</div>
+    <div class="sidebar-section">LookML</div>
+    <div class="sidebar-item"><i class="fas fa-code"></i> sales.model</div>
+    <div class="sidebar-item"><i class="fas fa-code"></i> orders.view</div>
+    <div class="sidebar-item"><i class="fas fa-code"></i> customers.view</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- HEADER -->
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Enterprise Sales Analytics</div>
+        <div class="dash-meta">Last refreshed: Today at 09:14 AM &nbsp;&bull;&nbsp; Source: <span>BigQuery → sales_prod</span></div>
+      </div>
+      <div class="dash-actions">
+        <div class="action-btn"><i class="fas fa-sync-alt"></i> Refresh</div>
+        <div class="action-btn"><i class="fas fa-download"></i> Export</div>
+        <div class="action-btn"><i class="fas fa-bell"></i> Alerts</div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-tile blue">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value">$4.21M</div>
+        <div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +18.4% vs prior period</div>
+      </div>
+      <div class="kpi-tile green">
+        <div class="kpi-label">Total Orders</div>
+        <div class="kpi-value">12,847</div>
+        <div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +9.2% vs prior period</div>
+      </div>
+      <div class="kpi-tile yellow">
+        <div class="kpi-label">Avg Order Value</div>
+        <div class="kpi-value">$326</div>
+        <div class="kpi-sub kpi-down"><i class="fas fa-arrow-down"></i> -3.1% vs prior period</div>
+      </div>
+      <div class="kpi-tile red">
+        <div class="kpi-label">Return Rate</div>
+        <div class="kpi-value">4.2%</div>
+        <div class="kpi-sub kpi-up"><i class="fas fa-arrow-down"></i> -0.8pp vs prior period</div>
+      </div>
+      <div class="kpi-tile purple">
+        <div class="kpi-label">Active Customers</div>
+        <div class="kpi-value">8,492</div>
+        <div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +14.7% vs prior period</div>
+      </div>
+    </div>
+
+    <!-- REVENUE TREND + REGION PIE -->
+    <div class="chart-row">
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Monthly Revenue vs Target</div>
+          <div style="display:flex;gap:0.5rem;align-items:center">
+            <div class="chart-badge">BigQuery · orders</div>
+            <div class="chart-toggle">
+              <button class="toggle-btn active">Monthly</button>
+              <button class="toggle-btn">Weekly</button>
+            </div>
+          </div>
+        </div>
+        <canvas id="revTrendChart" height="130"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Revenue by Region</div>
+          <div class="chart-badge">Drill-through enabled</div>
+        </div>
+        <canvas id="regionPieChart" height="165"></canvas>
+      </div>
+    </div>
+
+    <!-- PRODUCT CATEGORY + ORDER STATUS + CUSTOMER SEGMENT -->
+    <div class="chart-row-3">
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Revenue by Category</div>
+        </div>
+        <canvas id="categoryChart" height="150"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Orders by Status</div>
+        </div>
+        <canvas id="statusChart" height="150"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Customer Acquisition</div>
+        </div>
+        <canvas id="acqChart" height="150"></canvas>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-panel">
+      <div class="table-header">
+        <div class="table-title">Top Deals – LookML Explore: orders</div>
+        <input class="table-search" placeholder="Search orders..." />
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Region</th>
+            <th>Revenue</th>
+            <th>Margin</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>#ORD-8821</td><td>Apex Manufacturing</td><td>Premium Feed Blend A</td><td>West</td><td>$142,000</td><td><div class="bar-cell"><div class="mini-bar" style="width:58px"></div>42%</div></td><td><span class="status won">Won</span></td></tr>
+          <tr><td>#ORD-8817</td><td>Northern Livestock Co.</td><td>Poultry Supplement Pro</td><td>North</td><td>$98,500</td><td><div class="bar-cell"><div class="mini-bar" style="width:45px"></div>38%</div></td><td><span class="status active">Active</span></td></tr>
+          <tr><td>#ORD-8810</td><td>Prairie Farms Ltd.</td><td>Hog Finishing Mix</td><td>Central</td><td>$87,200</td><td><div class="bar-cell"><div class="mini-bar" style="width:38px"></div>31%</div></td><td><span class="status won">Won</span></td></tr>
+          <tr><td>#ORD-8805</td><td>Sunrise Poultry</td><td>Layer Feed Standard</td><td>East</td><td>$76,400</td><td><div class="bar-cell"><div class="mini-bar" style="width:32px"></div>29%</div></td><td><span class="status active">Active</span></td></tr>
+          <tr><td>#ORD-8798</td><td>Great Plains Growers</td><td>Cattle Finisher XR</td><td>South</td><td>$64,100</td><td><div class="bar-cell"><div class="mini-bar" style="width:22px"></div>22%</div></td><td><span class="status lost">Lost</span></td></tr>
+          <tr><td>#ORD-8791</td><td>Valley Beef Operations</td><td>Premium Feed Blend B</td><td>West</td><td>$59,700</td><td><div class="bar-cell"><div class="mini-bar" style="width:35px"></div>33%</div></td><td><span class="status won">Won</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const GRID = '#2a3349', TICK = '#6b7fa8', BG = '#1e2537';
+const defaults = {
+  plugins: { legend: { labels: { color: TICK, font: { size: 10 }, boxWidth: 10, padding: 8 } },
+    tooltip: { backgroundColor: '#0d1117', borderColor: GRID, borderWidth: 1 } },
+  scales: {
+    x: { ticks: { color: TICK, font: { size: 10 } }, grid: { color: GRID } },
+    y: { ticks: { color: TICK, font: { size: 10 } }, grid: { color: GRID } }
+  }
+};
+
+// Revenue Trend
+new Chart(document.getElementById('revTrendChart'), {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [
+      { label: 'Actual Revenue', data: [290,320,305,380,410,460,430,490,510,540,580,510], borderColor: '#4285f4', backgroundColor: 'rgba(66,133,244,0.08)', fill: true, tension: 0.4, borderWidth: 2.5, pointRadius: 3 },
+      { label: 'Target', data: [280,300,320,340,360,380,400,420,440,460,480,500], borderColor: '#fbbc04', borderWidth: 1.5, borderDash: [5,4], pointRadius: 0, tension: 0.4 }
+    ]
+  },
+  options: { ...defaults, responsive: true, scales: { ...defaults.scales, y: { ...defaults.scales.y, ticks: { ...defaults.scales.y.ticks, callback: v => '$' + v + 'K' } } } }
+});
+
+// Region Pie
+new Chart(document.getElementById('regionPieChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['West', 'North', 'Central', 'East', 'South'],
+    datasets: [{ data: [32, 24, 19, 14, 11], backgroundColor: ['#4285f4','#34a853','#fbbc04','#9b59b6','#ea4335'], borderWidth: 0, hoverOffset: 6 }]
+  },
+  options: { responsive: true, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: TICK, font: { size: 10 }, boxWidth: 10, padding: 6 } }, tooltip: { backgroundColor: '#0d1117' } } }
+});
+
+// Category Bar
+new Chart(document.getElementById('categoryChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Feed Blends', 'Supplements', 'Finishers', 'Specialty'],
+    datasets: [{ label: 'Revenue ($K)', data: [1420, 980, 870, 640], backgroundColor: ['#4285f4','#34a853','#fbbc04','#9b59b6'], borderRadius: 4 }]
+  },
+  options: { ...defaults, responsive: true, plugins: { legend: { display: false } }, scales: { ...defaults.scales, y: { ...defaults.scales.y, ticks: { ...defaults.scales.y.ticks, callback: v => '$' + v + 'K' } } } }
+});
+
+// Order Status
+new Chart(document.getElementById('statusChart'), {
+  type: 'pie',
+  data: {
+    labels: ['Completed', 'Processing', 'Pending', 'Cancelled'],
+    datasets: [{ data: [68, 18, 9, 5], backgroundColor: ['#34a853','#4285f4','#fbbc04','#ea4335'], borderWidth: 0 }]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: TICK, font: { size: 9 }, boxWidth: 10, padding: 6 } }, tooltip: { backgroundColor: '#0d1117' } } }
+});
+
+// Customer Acquisition
+new Chart(document.getElementById('acqChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Q1','Q2','Q3','Q4'],
+    datasets: [
+      { label: 'New', data: [820, 1050, 970, 1240], backgroundColor: 'rgba(66,133,244,0.7)', borderRadius: 4 },
+      { label: 'Returning', data: [2100, 2300, 2450, 2800], backgroundColor: 'rgba(52,168,83,0.5)', borderRadius: 4 }
+    ]
+  },
+  options: { ...defaults, responsive: true, scales: { ...defaults.scales, x: { ...defaults.scales.x, stacked: true }, y: { ...defaults.scales.y, stacked: true } } }
+});
+</script>
+</body>
+</html>
