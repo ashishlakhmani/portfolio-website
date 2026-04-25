@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Looker Explore – Customers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--border:#21262d;--text:#e6edf3;--muted:#6b7fa8;--blue:#4285f4;--green:#34a853;--yellow:#fbbc04;--red:#ea4335;--purple:#9b59b6;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+    /* TOPBAR */
+    .topbar{background:#0d1117;border-bottom:1px solid var(--border);padding:0 1rem;height:48px;display:flex;align-items:center;gap:1rem;flex-shrink:0;}
+    .topbar-logo{display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:1rem;color:var(--blue);white-space:nowrap;}
+    .breadcrumb{font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;flex:1;}
+    .breadcrumb span{color:var(--text);font-weight:500;}
+    .filter-chips{display:flex;align-items:center;gap:0.5rem;}
+    .chip{background:var(--panel2);border:1px solid var(--border);padding:0.25rem 0.65rem;border-radius:20px;font-size:0.72rem;color:var(--text);display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}
+    .chip i{font-size:0.6rem;color:var(--muted);}
+    .topbar-actions{display:flex;align-items:center;gap:0.5rem;margin-left:auto;}
+    .btn-run{background:var(--green);color:#fff;border:none;padding:0.3rem 1rem;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.35rem;}
+    .btn-share{background:var(--panel2);border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.75rem;border-radius:5px;font-size:0.78rem;cursor:pointer;display:flex;align-items:center;gap:0.35rem;text-decoration:none;}
+    .explore-badge{background:rgba(66,133,244,0.15);border:1px solid rgba(66,133,244,0.35);color:var(--blue);padding:0.2rem 0.6rem;border-radius:4px;font-size:0.68rem;font-weight:600;white-space:nowrap;}
+
+    /* LAYOUT */
+    .explore-layout{display:flex;flex:1;overflow:hidden;}
+
+    /* FIELD PICKER */
+    .field-picker{width:260px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+    .fp-header{padding:0.6rem 1rem;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .fp-search{padding:0.5rem 0.75rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .fp-search input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:0.3rem 0.6rem;border-radius:4px;font-size:0.75rem;outline:none;}
+    .fp-search input::placeholder{color:var(--muted);}
+    .fp-body{flex:1;overflow-y:auto;padding:0.5rem 0;}
+    .fp-group{margin-bottom:0.25rem;}
+    .fp-group-header{padding:0.4rem 1rem;font-size:0.68rem;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:0.4rem;cursor:pointer;}
+    .fp-group-header i{font-size:0.6rem;color:var(--muted);}
+    .fp-subhead{padding:0.25rem 1rem 0.15rem 1.5rem;font-size:0.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+    .fp-field{padding:0.28rem 1rem 0.28rem 1.75rem;font-size:0.76rem;color:var(--muted);display:flex;align-items:center;gap:0.5rem;cursor:pointer;transition:background 0.12s;}
+    .fp-field:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+    .fp-field.checked{color:var(--text);}
+    .fp-field .chk{width:13px;height:13px;border:1.5px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .fp-field.checked .chk{background:var(--blue);border-color:var(--blue);}
+    .fp-field.checked .chk::after{content:'';width:7px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px);}
+    .fp-dim{color:#9cdcfe;font-size:0.6rem;margin-left:auto;}
+    .fp-meas{color:#f7c948;font-size:0.6rem;margin-left:auto;}
+
+    /* MAIN AREA */
+    .explore-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .viz-tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);padding:0 1rem;gap:0;flex-shrink:0;align-items:center;}
+    .viz-tab{padding:0.5rem 1rem;font-size:0.78rem;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+    .viz-tab.active{color:var(--text);border-bottom-color:var(--blue);}
+    .viz-type-bar{display:flex;align-items:center;gap:0.4rem;margin-left:auto;padding:0.35rem 0;}
+    .vt-pill{padding:0.22rem 0.65rem;border-radius:4px;font-size:0.72rem;color:var(--muted);cursor:pointer;border:1px solid transparent;}
+    .vt-pill.active{background:rgba(66,133,244,0.2);border-color:rgba(66,133,244,0.4);color:var(--blue);}
+
+    .explore-content{flex:1;overflow-y:auto;padding:1rem;}
+    .result-bar{display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;}
+    .result-info{font-size:0.75rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;}
+    .result-info .ok{color:var(--green);}
+
+    .chart-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;}
+    .chart-title{font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.75rem;}
+    .chart-wrap{height:260px;position:relative;}
+
+    /* DATA TABLE */
+    .data-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem;}
+    .dt-header{padding:0.5rem 1rem;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);background:var(--panel2);}
+    table{width:100%;border-collapse:collapse;}
+    th{padding:0.45rem 1rem;font-size:0.72rem;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);background:var(--panel2);font-weight:500;}
+    td{padding:0.45rem 1rem;font-size:0.78rem;color:var(--text);border-bottom:1px solid rgba(33,38,45,0.7);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(255,255,255,0.025);}
+    .tag{display:inline-block;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.68rem;font-weight:600;}
+    .tag-blue{background:rgba(66,133,244,0.15);color:var(--blue);}
+    .tag-green{background:rgba(52,168,83,0.15);color:var(--green);}
+    .tag-yellow{background:rgba(251,188,4,0.15);color:var(--yellow);}
+    .tag-red{background:rgba(234,67,53,0.15);color:var(--red);}
+    .tag-purple{background:rgba(155,89,182,0.15);color:var(--purple);}
+    .churn-bar-wrap{width:80px;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+    .churn-bar{height:100%;border-radius:3px;}
+
+    /* SQL PANE */
+    .sql-toggle{display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.75rem;color:var(--muted);padding:0.4rem 0;user-select:none;}
+    .sql-toggle:hover{color:var(--text);}
+    .sql-pane{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;font-family:'Fira Code',monospace;font-size:0.73rem;line-height:1.6;color:#cdd3de;display:none;margin-bottom:1rem;overflow-x:auto;white-space:pre;}
+    .sql-pane.open{display:block;}
+    .s-kw{color:#4fc1ff;}.s-fn{color:#dcdcaa;}.s-str{color:#98c379;}.s-cmt{color:#6a7fa8;font-style:italic;}.s-num{color:#b5cea8;}
+
+    .back-link{position:fixed;bottom:2rem;right:1.5rem;background:var(--blue);color:#fff;padding:0.55rem 1.1rem;border-radius:7px;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:0.4rem;z-index:100;text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo"><i class="fas fa-eye"></i> Looker</div>
+  <div class="breadcrumb">
+    <i class="fas fa-compass" style="font-size:0.65rem"></i>
+    <span>Explore: Customers</span>
+  </div>
+  <div class="filter-chips">
+    <div class="chip"><i class="fas fa-user-tag"></i> Segment = All <i class="fas fa-times"></i></div>
+    <div class="chip"><i class="fas fa-calendar-alt"></i> Created Year = 2025 <i class="fas fa-times"></i></div>
+    <div class="chip" style="color:var(--blue);border-color:rgba(66,133,244,0.4)"><i class="fas fa-plus" style="color:var(--blue)"></i> Add Filter</div>
+  </div>
+  <div class="topbar-actions">
+    <div class="explore-badge"><i class="fas fa-rocket" style="font-size:0.6rem"></i> Explore from here</div>
+    <a href="looker-customer360.html" class="btn-share"><i class="fas fa-arrow-left"></i> Customer 360</a>
+    <button class="btn-run"><i class="fas fa-play"></i> Run</button>
+  </div>
+</div>
+
+<div class="explore-layout">
+  <!-- FIELD PICKER -->
+  <div class="field-picker">
+    <div class="fp-header"><i class="fas fa-sliders-h" style="margin-right:0.4rem"></i> Field Picker</div>
+    <div class="fp-search"><input type="text" placeholder="Search fields…" /></div>
+    <div class="fp-body">
+
+      <!-- CUSTOMERS group -->
+      <div class="fp-group">
+        <div class="fp-group-header"><i class="fas fa-chevron-down"></i> CUSTOMERS</div>
+        <div class="fp-subhead">Dimensions</div>
+        <div class="fp-field checked"><div class="chk"></div> Segment <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Name <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> CLV Tier <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Region <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Tenure Band <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Is High Value <span class="fp-dim">DIM</span></div>
+        <div class="fp-subhead">Measures</div>
+        <div class="fp-field checked"><div class="chk"></div> Customer Count <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field checked"><div class="chk"></div> Avg CLV <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field checked"><div class="chk"></div> Avg Order Frequency <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field"><div class="chk"></div> High Value Count <span class="fp-meas">MEAS</span></div>
+      </div>
+
+      <!-- INTERACTIONS group -->
+      <div class="fp-group">
+        <div class="fp-group-header"><i class="fas fa-chevron-down"></i> INTERACTIONS</div>
+        <div class="fp-subhead">Dimensions</div>
+        <div class="fp-field"><div class="chk"></div> Channel <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Interaction Date Month <span class="fp-dim">DIM</span></div>
+        <div class="fp-subhead">Measures</div>
+        <div class="fp-field checked"><div class="chk"></div> NPS Score (Avg) <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field"><div class="chk"></div> Promoter Rate <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field"><div class="chk"></div> Detractor Rate <span class="fp-meas">MEAS</span></div>
+      </div>
+
+      <!-- SEGMENTS group -->
+      <div class="fp-group">
+        <div class="fp-group-header"><i class="fas fa-chevron-down"></i> SEGMENTS</div>
+        <div class="fp-subhead">Dimensions</div>
+        <div class="fp-field"><div class="chk"></div> Segment Name <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Tier <span class="fp-dim">DIM</span></div>
+        <div class="fp-subhead">Measures</div>
+        <div class="fp-field checked"><div class="chk"></div> Churn Rate <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field"><div class="chk"></div> Avg Revenue Per Segment <span class="fp-meas">MEAS</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="explore-main">
+    <div class="viz-tabs">
+      <div class="viz-tab active">Visualization</div>
+      <div class="viz-tab">Data</div>
+      <div class="viz-tab">SQL</div>
+      <div class="viz-type-bar">
+        <div class="vt-pill active"><i class="fas fa-chart-bar"></i> Bar</div>
+        <div class="vt-pill"><i class="fas fa-chart-line"></i> Line</div>
+        <div class="vt-pill"><i class="fas fa-circle"></i> Scatter</div>
+        <div class="vt-pill"><i class="fas fa-table"></i> Table</div>
+      </div>
+    </div>
+    <div class="explore-content">
+      <div class="result-bar">
+        <div class="result-info"><i class="fas fa-check-circle ok"></i> Query ran in 1.1s — <strong>4 rows</strong></div>
+        <div class="result-info" style="margin-left:auto;"><i class="fas fa-clock"></i> Last run: just now</div>
+      </div>
+
+      <!-- CHART -->
+      <div class="chart-card">
+        <div class="chart-title">Avg CLV &amp; NPS by Customer Segment</div>
+        <div class="chart-wrap"><canvas id="custChart"></canvas></div>
+      </div>
+
+      <!-- DATA TABLE -->
+      <div class="data-table-wrap">
+        <div class="dt-header"><i class="fas fa-table" style="margin-right:0.4rem"></i> Results — 4 rows</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Segment</th>
+              <th>Customer Count</th>
+              <th>Avg CLV</th>
+              <th>Avg Order Freq.</th>
+              <th>NPS Score</th>
+              <th>Churn Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tag tag-green">Enterprise</span></td>
+              <td>842</td>
+              <td>$112,400</td>
+              <td>9.4 / yr</td>
+              <td>74</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  1.2%
+                  <div class="churn-bar-wrap"><div class="churn-bar" style="width:12%;background:var(--green)"></div></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-blue">Mid-Market</span></td>
+              <td>1,530</td>
+              <td>$54,800</td>
+              <td>6.8 / yr</td>
+              <td>68</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  3.1%
+                  <div class="churn-bar-wrap"><div class="churn-bar" style="width:31%;background:var(--blue)"></div></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-yellow">Growth</span></td>
+              <td>1,904</td>
+              <td>$28,600</td>
+              <td>4.9 / yr</td>
+              <td>61</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  5.4%
+                  <div class="churn-bar-wrap"><div class="churn-bar" style="width:54%;background:var(--yellow)"></div></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-red">At-Risk</span></td>
+              <td>545</td>
+              <td>$11,200</td>
+              <td>2.1 / yr</td>
+              <td>38</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  14.7%
+                  <div class="churn-bar-wrap"><div class="churn-bar" style="width:100%;background:var(--red)"></div></div>
+                </div>
+              </td>
+            </tr>
+            <tr style="background:rgba(66,133,244,0.04)">
+              <td style="font-weight:600;color:#fff">Total / Avg</td>
+              <td style="font-weight:600;color:#fff">4,821</td>
+              <td style="font-weight:600;color:#fff">$48,200</td>
+              <td style="font-weight:600;color:#fff">6.2 / yr</td>
+              <td style="font-weight:600;color:#fff">67</td>
+              <td style="font-weight:600;color:#fff">3.8%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SQL PANE -->
+      <div class="sql-toggle" onclick="toggleSql()">
+        <i class="fas fa-code"></i> <span id="sql-toggle-lbl">Show SQL</span>
+        <i class="fas fa-chevron-down" id="sql-chevron" style="font-size:0.6rem;margin-left:0.25rem"></i>
+      </div>
+      <div class="sql-pane" id="sqlPane"><span class="s-cmt">-- Generated by Looker · bigquery_prod · Explore: customers</span>
+<span class="s-kw">SELECT</span>
+  customers.segment                        <span class="s-kw">AS</span> <span class="s-str">`customers.segment`</span>,
+  <span class="s-fn">COUNT</span>(DISTINCT customers.customer_id)    <span class="s-kw">AS</span> <span class="s-str">`customers.customer_count`</span>,
+  <span class="s-fn">AVG</span>(customers.lifetime_value)            <span class="s-kw">AS</span> <span class="s-str">`customers.avg_clv`</span>,
+  <span class="s-fn">AVG</span>(customers.order_frequency_annual)    <span class="s-kw">AS</span> <span class="s-str">`customers.avg_order_frequency`</span>,
+  <span class="s-fn">AVG</span>(interactions.nps_score)              <span class="s-kw">AS</span> <span class="s-str">`interactions.nps_score_avg`</span>,
+  <span class="s-fn">SAFE_DIVIDE</span>(
+    <span class="s-fn">COUNTIF</span>(customers.is_churned),
+    <span class="s-fn">COUNT</span>(customers.customer_id)
+  )                                        <span class="s-kw">AS</span> <span class="s-str">`segments.churn_rate`</span>
+<span class="s-kw">FROM</span> <span class="s-str">`customers_prod.customers`</span> <span class="s-kw">AS</span> customers
+<span class="s-kw">LEFT JOIN</span> <span class="s-str">`customers_prod.interactions`</span> <span class="s-kw">AS</span> interactions
+  <span class="s-kw">ON</span> interactions.customer_id = customers.customer_id
+<span class="s-kw">LEFT JOIN</span> <span class="s-str">`customers_prod.segments`</span> <span class="s-kw">AS</span> segments
+  <span class="s-kw">ON</span> segments.segment_id = customers.segment_id
+<span class="s-kw">WHERE</span>
+  customers.created_year = <span class="s-num">2025</span>
+  <span class="s-kw">AND</span> (<span class="s-cmt">/* RLS filter */</span> customers.region <span class="s-kw">IN</span> (
+    <span class="s-kw">SELECT</span> region <span class="s-kw">FROM</span> <span class="s-str">`customers_prod.user_region_access`</span>
+    <span class="s-kw">WHERE</span> user_email = SESSION_USER()
+  ))
+<span class="s-kw">GROUP BY</span> <span class="s-num">1</span>
+<span class="s-kw">ORDER BY</span> <span class="s-num">3</span> <span class="s-kw">DESC</span>
+<span class="s-kw">LIMIT</span> <span class="s-num">500</span></div>
+    </div>
+  </div>
+</div>
+
+<a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Portfolio</a>
+
+<script>
+const ctx = document.getElementById('custChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['Enterprise', 'Mid-Market', 'Growth', 'At-Risk'],
+    datasets: [
+      {
+        label: 'Avg CLV ($)',
+        data: [112400, 54800, 28600, 11200],
+        backgroundColor: ['rgba(52,168,83,0.75)','rgba(66,133,244,0.75)','rgba(251,188,4,0.75)','rgba(234,67,53,0.75)'],
+        borderColor: ['#34a853','#4285f4','#fbbc04','#ea4335'],
+        borderWidth: 1,
+        borderRadius: 4,
+        yAxisID: 'y'
+      },
+      {
+        label: 'NPS Score',
+        data: [74, 68, 61, 38],
+        type: 'line',
+        borderColor: 'rgba(155,89,182,0.9)',
+        backgroundColor: 'rgba(155,89,182,0.15)',
+        borderWidth: 2,
+        pointRadius: 5,
+        pointBackgroundColor: '#9b59b6',
+        tension: 0.3,
+        yAxisID: 'y2'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        labels: { color: '#6b7fa8', font: { size: 11 }, boxWidth: 12 }
+      },
+      tooltip: {
+        backgroundColor: '#1c2330',
+        borderColor: '#21262d',
+        borderWidth: 1,
+        callbacks: {
+          label: ctx => {
+            if (ctx.dataset.label === 'Avg CLV ($)') return ' Avg CLV: $' + (ctx.raw/1000).toFixed(1) + 'K';
+            return ' NPS: ' + ctx.raw;
+          }
+        }
+      }
+    },
+    scales: {
+      x: { ticks: { color:'#6b7fa8', font:{size:11} }, grid: { color:'rgba(33,38,45,0.8)' } },
+      y: {
+        position: 'left',
+        ticks: { color:'#6b7fa8', font:{size:11}, callback: v => '$' + (v/1000).toFixed(0) + 'K' },
+        grid: { color:'rgba(33,38,45,0.8)' }
+      },
+      y2: {
+        position: 'right',
+        ticks: { color:'#9b59b6', font:{size:11} },
+        grid: { drawOnChartArea: false }
+      }
+    }
+  }
+});
+
+function toggleSql() {
+  const pane = document.getElementById('sqlPane');
+  const lbl = document.getElementById('sql-toggle-lbl');
+  const chev = document.getElementById('sql-chevron');
+  const open = pane.classList.toggle('open');
+  lbl.textContent = open ? 'Hide SQL' : 'Show SQL';
+  chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+</script>
+</body>
+</html>
