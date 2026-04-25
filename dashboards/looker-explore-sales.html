@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Looker Explore – Orders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--border:#21262d;--text:#e6edf3;--muted:#6b7fa8;--blue:#4285f4;--green:#34a853;--yellow:#fbbc04;--red:#ea4335;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+    /* TOPBAR */
+    .topbar{background:#0d1117;border-bottom:1px solid var(--border);padding:0 1rem;height:48px;display:flex;align-items:center;gap:1rem;flex-shrink:0;}
+    .topbar-logo{display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:1rem;color:var(--blue);white-space:nowrap;}
+    .breadcrumb{font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;flex:1;}
+    .breadcrumb span{color:var(--text);font-weight:500;}
+    .filter-chips{display:flex;align-items:center;gap:0.5rem;}
+    .chip{background:var(--panel2);border:1px solid var(--border);padding:0.25rem 0.65rem;border-radius:20px;font-size:0.72rem;color:var(--text);display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}
+    .chip i{font-size:0.6rem;color:var(--muted);}
+    .topbar-actions{display:flex;align-items:center;gap:0.5rem;margin-left:auto;}
+    .btn-run{background:var(--green);color:#fff;border:none;padding:0.3rem 1rem;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.35rem;}
+    .btn-share{background:var(--panel2);border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.75rem;border-radius:5px;font-size:0.78rem;cursor:pointer;display:flex;align-items:center;gap:0.35rem;}
+    .explore-badge{background:rgba(66,133,244,0.15);border:1px solid rgba(66,133,244,0.35);color:var(--blue);padding:0.2rem 0.6rem;border-radius:4px;font-size:0.68rem;font-weight:600;white-space:nowrap;}
+
+    /* LAYOUT */
+    .explore-layout{display:flex;flex:1;overflow:hidden;}
+
+    /* FIELD PICKER */
+    .field-picker{width:260px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+    .fp-header{padding:0.6rem 1rem;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .fp-search{padding:0.5rem 0.75rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .fp-search input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:0.3rem 0.6rem;border-radius:4px;font-size:0.75rem;outline:none;}
+    .fp-search input::placeholder{color:var(--muted);}
+    .fp-body{flex:1;overflow-y:auto;padding:0.5rem 0;}
+    .fp-group{margin-bottom:0.25rem;}
+    .fp-group-header{padding:0.4rem 1rem;font-size:0.68rem;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:0.4rem;cursor:pointer;}
+    .fp-group-header i{font-size:0.6rem;color:var(--muted);}
+    .fp-subhead{padding:0.25rem 1rem 0.15rem 1.5rem;font-size:0.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+    .fp-field{padding:0.28rem 1rem 0.28rem 1.75rem;font-size:0.76rem;color:var(--muted);display:flex;align-items:center;gap:0.5rem;cursor:pointer;transition:background 0.12s;}
+    .fp-field:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+    .fp-field.checked{color:var(--text);}
+    .fp-field .chk{width:13px;height:13px;border:1.5px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .fp-field.checked .chk{background:var(--blue);border-color:var(--blue);}
+    .fp-field.checked .chk::after{content:'';width:7px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px);}
+    .fp-dim{color:#9cdcfe;font-size:0.6rem;margin-left:auto;}
+    .fp-meas{color:#f7c948;font-size:0.6rem;margin-left:auto;}
+
+    /* MAIN AREA */
+    .explore-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .viz-tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);padding:0 1rem;gap:0;flex-shrink:0;align-items:center;}
+    .viz-tab{padding:0.5rem 1rem;font-size:0.78rem;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+    .viz-tab.active{color:var(--text);border-bottom-color:var(--blue);}
+    .viz-type-bar{display:flex;align-items:center;gap:0.4rem;margin-left:auto;padding:0.35rem 0;}
+    .vt-pill{padding:0.22rem 0.65rem;border-radius:4px;font-size:0.72rem;color:var(--muted);cursor:pointer;border:1px solid transparent;}
+    .vt-pill.active{background:rgba(66,133,244,0.2);border-color:rgba(66,133,244,0.4);color:var(--blue);}
+
+    .explore-content{flex:1;overflow-y:auto;padding:1rem;}
+    .result-bar{display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;}
+    .result-info{font-size:0.75rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;}
+    .result-info .ok{color:var(--green);}
+
+    .chart-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;}
+    .chart-title{font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.75rem;}
+    .chart-wrap{height:260px;position:relative;}
+
+    /* DATA TABLE */
+    .data-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem;}
+    .dt-header{padding:0.5rem 1rem;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);background:var(--panel2);}
+    table{width:100%;border-collapse:collapse;}
+    th{padding:0.45rem 1rem;font-size:0.72rem;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);background:var(--panel2);font-weight:500;}
+    td{padding:0.45rem 1rem;font-size:0.78rem;color:var(--text);border-bottom:1px solid rgba(33,38,45,0.7);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(255,255,255,0.025);}
+    .tag{display:inline-block;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.68rem;font-weight:600;}
+    .tag-blue{background:rgba(66,133,244,0.15);color:var(--blue);}
+
+    /* SQL PANE */
+    .sql-toggle{display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.75rem;color:var(--muted);padding:0.4rem 0;user-select:none;}
+    .sql-toggle:hover{color:var(--text);}
+    .sql-pane{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;font-family:'Fira Code',monospace;font-size:0.73rem;line-height:1.6;color:#cdd3de;display:none;margin-bottom:1rem;overflow-x:auto;white-space:pre;}
+    .sql-pane.open{display:block;}
+    .s-kw{color:#4fc1ff;}.s-fn{color:#dcdcaa;}.s-str{color:#98c379;}.s-cmt{color:#6a7fa8;font-style:italic;}.s-num{color:#b5cea8;}
+
+    .back-link{position:fixed;bottom:2rem;right:1.5rem;background:var(--blue);color:#fff;padding:0.55rem 1.1rem;border-radius:7px;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:0.4rem;z-index:100;text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo"><i class="fas fa-eye"></i> Looker</div>
+  <div class="breadcrumb">
+    <i class="fas fa-compass" style="font-size:0.65rem"></i>
+    <span>Explore: Orders</span>
+  </div>
+  <div class="filter-chips">
+    <div class="chip"><i class="fas fa-calendar-alt"></i> Created Month = Last 12 Months <i class="fas fa-times"></i></div>
+    <div class="chip"><i class="fas fa-map-marker-alt"></i> Region = All <i class="fas fa-times"></i></div>
+    <div class="chip" style="color:var(--blue);border-color:rgba(66,133,244,0.4)"><i class="fas fa-plus" style="color:var(--blue)"></i> Add Filter</div>
+  </div>
+  <div class="topbar-actions">
+    <div class="explore-badge"><i class="fas fa-rocket" style="font-size:0.6rem"></i> Explore from here</div>
+    <a href="looker-demo.html" class="btn-share"><i class="fas fa-arrow-left"></i> Sales Dashboard</a>
+    <button class="btn-run"><i class="fas fa-play"></i> Run</button>
+  </div>
+</div>
+
+<div class="explore-layout">
+  <!-- FIELD PICKER -->
+  <div class="field-picker">
+    <div class="fp-header"><i class="fas fa-sliders-h" style="margin-right:0.4rem"></i> Field Picker</div>
+    <div class="fp-search"><input type="text" placeholder="Search fields…" /></div>
+    <div class="fp-body">
+      <!-- ORDERS group -->
+      <div class="fp-group">
+        <div class="fp-group-header"><i class="fas fa-chevron-down"></i> ORDERS</div>
+        <div class="fp-subhead">Dimensions</div>
+        <div class="fp-field checked"><div class="chk"></div> Created Month <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Status <span class="fp-dim">DIM</span></div>
+        <div class="fp-field checked"><div class="chk"></div> Region <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Order Size Tier <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Is High Value <span class="fp-dim">DIM</span></div>
+        <div class="fp-subhead">Measures</div>
+        <div class="fp-field checked"><div class="chk"></div> Count <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field checked"><div class="chk"></div> Total Revenue <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field"><div class="chk"></div> Avg Order Value <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field"><div class="chk"></div> % of Total Revenue <span class="fp-meas">MEAS</span></div>
+      </div>
+      <!-- CUSTOMERS group -->
+      <div class="fp-group">
+        <div class="fp-group-header"><i class="fas fa-chevron-down"></i> CUSTOMERS</div>
+        <div class="fp-subhead">Dimensions</div>
+        <div class="fp-field"><div class="chk"></div> Name <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Segment <span class="fp-dim">DIM</span></div>
+        <div class="fp-subhead">Measures</div>
+        <div class="fp-field"><div class="chk"></div> Customer Count <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field"><div class="chk"></div> Avg CLV <span class="fp-meas">MEAS</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="explore-main">
+    <div class="viz-tabs">
+      <div class="viz-tab active">Visualization</div>
+      <div class="viz-tab">Data</div>
+      <div class="viz-tab">SQL</div>
+      <div class="viz-type-bar">
+        <div class="vt-pill active"><i class="fas fa-chart-bar"></i> Bar</div>
+        <div class="vt-pill"><i class="fas fa-chart-line"></i> Line</div>
+        <div class="vt-pill"><i class="fas fa-circle"></i> Scatter</div>
+        <div class="vt-pill"><i class="fas fa-table"></i> Table</div>
+      </div>
+    </div>
+    <div class="explore-content">
+      <div class="result-bar">
+        <div class="result-info"><i class="fas fa-check-circle ok"></i> Query ran in 0.8s — <strong>5 rows</strong></div>
+        <div class="result-info" style="margin-left:auto;"><i class="fas fa-clock"></i> Last run: just now</div>
+      </div>
+
+      <!-- CHART -->
+      <div class="chart-card">
+        <div class="chart-title">Revenue by Region — Last 12 Months</div>
+        <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
+      </div>
+
+      <!-- DATA TABLE -->
+      <div class="data-table-wrap">
+        <div class="dt-header"><i class="fas fa-table" style="margin-right:0.4rem"></i> Results — 5 rows</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>Order Count</th>
+              <th>Total Revenue</th>
+              <th>% of Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="tag tag-blue">West</span></td><td>4,821</td><td>$1,350,000</td><td>33.2%</td></tr>
+            <tr><td><span class="tag tag-blue">North</span></td><td>3,604</td><td>$1,010,000</td><td>24.8%</td></tr>
+            <tr><td><span class="tag tag-blue">Central</span></td><td>2,879</td><td>$800,000</td><td>19.7%</td></tr>
+            <tr><td><span class="tag tag-blue">East</span></td><td>2,156</td><td>$590,000</td><td>14.5%</td></tr>
+            <tr><td><span class="tag tag-blue">South</span></td><td>1,642</td><td>$460,000</td><td>11.3%</td></tr>
+            <tr style="background:rgba(66,133,244,0.04)">
+              <td style="font-weight:600;color:#fff">Total</td>
+              <td style="font-weight:600;color:#fff">15,102</td>
+              <td style="font-weight:600;color:#fff">$4,210,000</td>
+              <td style="font-weight:600;color:#fff">100.0%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SQL PANE -->
+      <div class="sql-toggle" onclick="toggleSql()">
+        <i class="fas fa-code"></i> <span id="sql-toggle-lbl">Show SQL</span>
+        <i class="fas fa-chevron-down" id="sql-chevron" style="font-size:0.6rem;margin-left:0.25rem"></i>
+      </div>
+      <div class="sql-pane" id="sqlPane"><span class="s-cmt">-- Generated by Looker · bigquery_prod · Explore: orders</span>
+<span class="s-kw">SELECT</span>
+  orders.region            <span class="s-kw">AS</span> <span class="s-str">`orders.region`</span>,
+  <span class="s-fn">COUNT</span>(DISTINCT orders.order_id)   <span class="s-kw">AS</span> <span class="s-str">`orders.count`</span>,
+  <span class="s-fn">SUM</span>(orders.order_total)           <span class="s-kw">AS</span> <span class="s-str">`orders.total_revenue`</span>,
+  <span class="s-fn">SAFE_DIVIDE</span>(
+    <span class="s-fn">SUM</span>(orders.order_total),
+    <span class="s-fn">SUM</span>(<span class="s-fn">SUM</span>(orders.order_total)) <span class="s-kw">OVER</span>()
+  )                        <span class="s-kw">AS</span> <span class="s-str">`orders.pct_of_total_revenue`</span>
+<span class="s-kw">FROM</span> <span class="s-str">`sales_prod.orders`</span> <span class="s-kw">AS</span> orders
+<span class="s-kw">WHERE</span>
+  orders.created_at &gt;= <span class="s-fn">DATE_TRUNC</span>(<span class="s-fn">DATE_SUB</span>(<span class="s-fn">CURRENT_DATE</span>(), <span class="s-kw">INTERVAL</span> <span class="s-num">12</span> MONTH), MONTH)
+  <span class="s-kw">AND</span> orders.created_at &lt; <span class="s-fn">DATE_TRUNC</span>(<span class="s-fn">CURRENT_DATE</span>(), MONTH)
+<span class="s-kw">GROUP BY</span> <span class="s-num">1</span>
+<span class="s-kw">ORDER BY</span> <span class="s-num">3</span> <span class="s-kw">DESC</span>
+<span class="s-kw">LIMIT</span> <span class="s-num">500</span></div>
+    </div>
+  </div>
+</div>
+
+<a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Portfolio</a>
+
+<script>
+// Chart
+const ctx = document.getElementById('salesChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['West','North','Central','East','South'],
+    datasets: [{
+      label: 'Total Revenue',
+      data: [1350000, 1010000, 800000, 590000, 460000],
+      backgroundColor: ['rgba(66,133,244,0.8)','rgba(66,133,244,0.7)','rgba(66,133,244,0.6)','rgba(66,133,244,0.5)','rgba(66,133,244,0.4)'],
+      borderColor: ['#4285f4','#4285f4','#4285f4','#4285f4','#4285f4'],
+      borderWidth: 1,
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {display: false},
+      tooltip: {
+        backgroundColor: '#1c2330',
+        borderColor: '#21262d',
+        borderWidth: 1,
+        callbacks: {
+          label: ctx => ' $' + (ctx.raw/1000).toFixed(0) + 'K'
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {color:'#6b7fa8', font:{size:11}},
+        grid: {color:'rgba(33,38,45,0.8)'}
+      },
+      y: {
+        ticks: {
+          color:'#6b7fa8',
+          font:{size:11},
+          callback: v => '$' + (v/1000).toFixed(0) + 'K'
+        },
+        grid: {color:'rgba(33,38,45,0.8)'}
+      }
+    }
+  }
+});
+
+function toggleSql() {
+  const pane = document.getElementById('sqlPane');
+  const lbl = document.getElementById('sql-toggle-lbl');
+  const chev = document.getElementById('sql-chevron');
+  const open = pane.classList.toggle('open');
+  lbl.textContent = open ? 'Hide SQL' : 'Show SQL';
+  chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+</script>
+</body>
+</html>

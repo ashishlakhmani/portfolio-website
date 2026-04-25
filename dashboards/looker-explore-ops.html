@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Looker Explore – Production</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--border:#21262d;--text:#e6edf3;--muted:#6b7fa8;--blue:#4285f4;--green:#34a853;--yellow:#fbbc04;--red:#ea4335;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+    .topbar{background:#0d1117;border-bottom:1px solid var(--border);padding:0 1rem;height:48px;display:flex;align-items:center;gap:1rem;flex-shrink:0;}
+    .topbar-logo{display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:1rem;color:var(--blue);white-space:nowrap;}
+    .breadcrumb{font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;flex:1;}
+    .breadcrumb span{color:var(--text);font-weight:500;}
+    .filter-chips{display:flex;align-items:center;gap:0.5rem;}
+    .chip{background:var(--panel2);border:1px solid var(--border);padding:0.25rem 0.65rem;border-radius:20px;font-size:0.72rem;color:var(--text);display:flex;align-items:center;gap:0.35rem;white-space:nowrap;}
+    .chip i{font-size:0.6rem;color:var(--muted);}
+    .topbar-actions{display:flex;align-items:center;gap:0.5rem;margin-left:auto;}
+    .btn-run{background:var(--green);color:#fff;border:none;padding:0.3rem 1rem;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.35rem;}
+    .btn-share{background:var(--panel2);border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.75rem;border-radius:5px;font-size:0.78rem;cursor:pointer;display:flex;align-items:center;gap:0.35rem;text-decoration:none;}
+    .explore-badge{background:rgba(66,133,244,0.15);border:1px solid rgba(66,133,244,0.35);color:var(--blue);padding:0.2rem 0.6rem;border-radius:4px;font-size:0.68rem;font-weight:600;white-space:nowrap;}
+
+    .explore-layout{display:flex;flex:1;overflow:hidden;}
+
+    .field-picker{width:260px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+    .fp-header{padding:0.6rem 1rem;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .fp-search{padding:0.5rem 0.75rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .fp-search input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:0.3rem 0.6rem;border-radius:4px;font-size:0.75rem;outline:none;}
+    .fp-search input::placeholder{color:var(--muted);}
+    .fp-body{flex:1;overflow-y:auto;padding:0.5rem 0;}
+    .fp-group{margin-bottom:0.25rem;}
+    .fp-group-header{padding:0.4rem 1rem;font-size:0.68rem;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:0.4rem;cursor:pointer;}
+    .fp-group-header i{font-size:0.6rem;color:var(--muted);}
+    .fp-subhead{padding:0.25rem 1rem 0.15rem 1.5rem;font-size:0.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+    .fp-field{padding:0.28rem 1rem 0.28rem 1.75rem;font-size:0.76rem;color:var(--muted);display:flex;align-items:center;gap:0.5rem;cursor:pointer;transition:background 0.12s;}
+    .fp-field:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+    .fp-field.checked{color:var(--text);}
+    .fp-field .chk{width:13px;height:13px;border:1.5px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .fp-field.checked .chk{background:var(--blue);border-color:var(--blue);}
+    .fp-field.checked .chk::after{content:'';width:7px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px);}
+    .fp-dim{color:#9cdcfe;font-size:0.6rem;margin-left:auto;}
+    .fp-meas{color:#f7c948;font-size:0.6rem;margin-left:auto;}
+
+    .explore-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .viz-tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);padding:0 1rem;gap:0;flex-shrink:0;align-items:center;}
+    .viz-tab{padding:0.5rem 1rem;font-size:0.78rem;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+    .viz-tab.active{color:var(--text);border-bottom-color:var(--blue);}
+    .viz-type-bar{display:flex;align-items:center;gap:0.4rem;margin-left:auto;padding:0.35rem 0;}
+    .vt-pill{padding:0.22rem 0.65rem;border-radius:4px;font-size:0.72rem;color:var(--muted);cursor:pointer;border:1px solid transparent;}
+    .vt-pill.active{background:rgba(66,133,244,0.2);border-color:rgba(66,133,244,0.4);color:var(--blue);}
+
+    .explore-content{flex:1;overflow-y:auto;padding:1rem;}
+    .result-bar{display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;}
+    .result-info{font-size:0.75rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;}
+    .result-info .ok{color:var(--green);}
+
+    .chart-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;}
+    .chart-title{font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.75rem;}
+    .chart-wrap{height:260px;position:relative;}
+
+    .data-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem;}
+    .dt-header{padding:0.5rem 1rem;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);background:var(--panel2);}
+    table{width:100%;border-collapse:collapse;}
+    th{padding:0.45rem 1rem;font-size:0.72rem;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);background:var(--panel2);font-weight:500;}
+    td{padding:0.45rem 1rem;font-size:0.78rem;color:var(--text);border-bottom:1px solid rgba(33,38,45,0.7);}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(255,255,255,0.025);}
+    .tag{display:inline-block;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.68rem;font-weight:600;}
+    .tag-green{background:rgba(52,168,83,0.15);color:var(--green);}
+    .tag-yellow{background:rgba(251,188,4,0.15);color:var(--yellow);}
+    .tag-blue{background:rgba(66,133,244,0.15);color:var(--blue);}
+    .above{color:var(--green);font-size:0.7rem;}
+    .below{color:var(--red);font-size:0.7rem;}
+
+    .sql-toggle{display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.75rem;color:var(--muted);padding:0.4rem 0;user-select:none;}
+    .sql-toggle:hover{color:var(--text);}
+    .sql-pane{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:0.75rem 1rem;font-family:'Fira Code',monospace;font-size:0.73rem;line-height:1.6;color:#cdd3de;display:none;margin-bottom:1rem;overflow-x:auto;white-space:pre;}
+    .sql-pane.open{display:block;}
+    .s-kw{color:#4fc1ff;}.s-fn{color:#dcdcaa;}.s-str{color:#98c379;}.s-cmt{color:#6a7fa8;font-style:italic;}.s-num{color:#b5cea8;}
+
+    .back-link{position:fixed;bottom:2rem;right:1.5rem;background:var(--blue);color:#fff;padding:0.55rem 1.1rem;border-radius:7px;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:0.4rem;z-index:100;text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo"><i class="fas fa-eye"></i> Looker</div>
+  <div class="breadcrumb">
+    <i class="fas fa-compass" style="font-size:0.65rem"></i>
+    <span>Explore: Production</span>
+  </div>
+  <div class="filter-chips">
+    <div class="chip"><i class="fas fa-calendar-alt"></i> Date = Last 30 Days <i class="fas fa-times"></i></div>
+    <div class="chip"><i class="fas fa-industry"></i> Plant = All <i class="fas fa-times"></i></div>
+    <div class="chip" style="color:var(--blue);border-color:rgba(66,133,244,0.4)"><i class="fas fa-plus" style="color:var(--blue)"></i> Add Filter</div>
+  </div>
+  <div class="topbar-actions">
+    <div class="explore-badge"><i class="fas fa-rocket" style="font-size:0.6rem"></i> Explore from here</div>
+    <a href="looker-operations.html" class="btn-share"><i class="fas fa-arrow-left"></i> Operations Dashboard</a>
+    <button class="btn-run"><i class="fas fa-play"></i> Run</button>
+  </div>
+</div>
+
+<div class="explore-layout">
+  <div class="field-picker">
+    <div class="fp-header"><i class="fas fa-sliders-h" style="margin-right:0.4rem"></i> Field Picker</div>
+    <div class="fp-search"><input type="text" placeholder="Search fields…" /></div>
+    <div class="fp-body">
+      <div class="fp-group">
+        <div class="fp-group-header"><i class="fas fa-chevron-down"></i> PRODUCTION</div>
+        <div class="fp-subhead">Dimensions</div>
+        <div class="fp-field checked"><div class="chk"></div> Date <span class="fp-dim">DIM</span></div>
+        <div class="fp-field checked"><div class="chk"></div> Plant <span class="fp-dim">DIM</span></div>
+        <div class="fp-subhead">Measures</div>
+        <div class="fp-field checked"><div class="chk"></div> Volume Tonnes <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field checked"><div class="chk"></div> Efficiency % <span class="fp-meas">MEAS</span></div>
+        <div class="fp-field"><div class="chk"></div> Target Volume <span class="fp-meas">MEAS</span></div>
+      </div>
+      <div class="fp-group">
+        <div class="fp-group-header"><i class="fas fa-chevron-down"></i> EQUIPMENT</div>
+        <div class="fp-subhead">Dimensions</div>
+        <div class="fp-field"><div class="chk"></div> Name <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Plant <span class="fp-dim">DIM</span></div>
+        <div class="fp-field"><div class="chk"></div> Status <span class="fp-dim">DIM</span></div>
+        <div class="fp-subhead">Measures</div>
+        <div class="fp-field"><div class="chk"></div> Utilization % <span class="fp-meas">MEAS</span></div>
+      </div>
+      <div class="fp-group">
+        <div class="fp-group-header"><i class="fas fa-chevron-down"></i> SHIFTS</div>
+        <div class="fp-subhead">Dimensions</div>
+        <div class="fp-field checked"><div class="chk"></div> Shift Name <span class="fp-dim">DIM</span></div>
+        <div class="fp-subhead">Measures</div>
+        <div class="fp-field checked"><div class="chk"></div> Avg Efficiency <span class="fp-meas">MEAS</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="explore-main">
+    <div class="viz-tabs">
+      <div class="viz-tab active">Visualization</div>
+      <div class="viz-tab">Data</div>
+      <div class="viz-tab">SQL</div>
+      <div class="viz-type-bar">
+        <div class="vt-pill active"><i class="fas fa-chart-bar"></i> Bar</div>
+        <div class="vt-pill"><i class="fas fa-chart-line"></i> Line</div>
+        <div class="vt-pill"><i class="fas fa-circle"></i> Scatter</div>
+        <div class="vt-pill"><i class="fas fa-table"></i> Table</div>
+      </div>
+    </div>
+    <div class="explore-content">
+      <div class="result-bar">
+        <div class="result-info"><i class="fas fa-check-circle ok"></i> Query ran in 0.8s — <strong>5 rows</strong></div>
+        <div class="result-info" style="margin-left:auto;"><i class="fas fa-clock"></i> Last run: just now</div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Production Volume vs Target by Plant &amp; Shift</div>
+        <div class="chart-wrap"><canvas id="opsChart"></canvas></div>
+      </div>
+
+      <div class="data-table-wrap">
+        <div class="dt-header"><i class="fas fa-table" style="margin-right:0.4rem"></i> Results — 5 rows</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Plant</th>
+              <th>Shift</th>
+              <th>Volume (t)</th>
+              <th>Efficiency</th>
+              <th>vs Target</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2024-04-22</td>
+              <td><span class="tag tag-blue">Steinbach</span></td>
+              <td>Day</td>
+              <td>31,200</td>
+              <td><span class="tag tag-green">94.2%</span></td>
+              <td><span class="above">+11.4%</span></td>
+            </tr>
+            <tr>
+              <td>2024-04-22</td>
+              <td><span class="tag tag-blue">Steinbach</span></td>
+              <td>Evening</td>
+              <td>28,400</td>
+              <td><span class="tag tag-green">91.3%</span></td>
+              <td><span class="above">+1.4%</span></td>
+            </tr>
+            <tr>
+              <td>2024-04-22</td>
+              <td><span class="tag tag-blue">Winnipeg</span></td>
+              <td>Day</td>
+              <td>14,800</td>
+              <td><span class="tag tag-green">92.5%</span></td>
+              <td><span class="above">+5.7%</span></td>
+            </tr>
+            <tr>
+              <td>2024-04-22</td>
+              <td><span class="tag tag-blue">Winnipeg</span></td>
+              <td>Evening</td>
+              <td>13,100</td>
+              <td><span class="tag tag-yellow">87.4%</span></td>
+              <td><span class="below">-6.4%</span></td>
+            </tr>
+            <tr>
+              <td>2024-04-21</td>
+              <td><span class="tag tag-blue">Steinbach</span></td>
+              <td>Day</td>
+              <td>29,700</td>
+              <td><span class="tag tag-green">90.1%</span></td>
+              <td><span class="above">+6.1%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sql-toggle" onclick="toggleSql()">
+        <i class="fas fa-code"></i> <span id="sql-toggle-lbl">Show SQL</span>
+        <i class="fas fa-chevron-down" id="sql-chevron" style="font-size:0.6rem;margin-left:0.25rem"></i>
+      </div>
+      <div class="sql-pane" id="sqlPane"><span class="s-cmt">-- Generated by Looker · bigquery_prod · Explore: production</span>
+<span class="s-kw">SELECT</span>
+  <span class="s-fn">DATE</span>(production.production_date)   <span class="s-kw">AS</span> <span class="s-str">`production.date`</span>,
+  production.plant_name              <span class="s-kw">AS</span> <span class="s-str">`production.plant`</span>,
+  shifts.shift_name                  <span class="s-kw">AS</span> <span class="s-str">`shifts.shift_name`</span>,
+  <span class="s-fn">SUM</span>(production.volume_tonnes)      <span class="s-kw">AS</span> <span class="s-str">`production.total_volume_tonnes`</span>,
+  <span class="s-fn">AVG</span>(production.efficiency_pct)     <span class="s-kw">AS</span> <span class="s-str">`production.avg_efficiency`</span>,
+  <span class="s-fn">AVG</span>(shifts.efficiency_pct)         <span class="s-kw">AS</span> <span class="s-str">`shifts.avg_efficiency`</span>
+<span class="s-kw">FROM</span> <span class="s-str">`ops_prod.production`</span> <span class="s-kw">AS</span> production
+<span class="s-kw">LEFT JOIN</span> <span class="s-str">`ops_prod.shifts`</span> <span class="s-kw">AS</span> shifts
+  <span class="s-kw">ON</span> production.shift_id = shifts.shift_id
+<span class="s-kw">WHERE</span>
+  production.production_date &gt;= <span class="s-fn">DATE_SUB</span>(<span class="s-fn">CURRENT_DATE</span>(), <span class="s-kw">INTERVAL</span> <span class="s-num">30</span> DAY)
+<span class="s-kw">GROUP BY</span> <span class="s-num">1</span>, <span class="s-num">2</span>, <span class="s-num">3</span>
+<span class="s-kw">ORDER BY</span> <span class="s-num">1</span> <span class="s-kw">DESC</span>, <span class="s-num">4</span> <span class="s-kw">DESC</span>
+<span class="s-kw">LIMIT</span> <span class="s-num">500</span></div>
+    </div>
+  </div>
+</div>
+
+<a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Portfolio</a>
+
+<script>
+const ctx = document.getElementById('opsChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['Steinbach Day','Steinbach Evening','Winnipeg Day'],
+    datasets: [
+      {
+        label: 'Actual Volume (t)',
+        data: [31200, 28400, 14800],
+        backgroundColor: 'rgba(66,133,244,0.8)',
+        borderColor: '#4285f4',
+        borderWidth: 1,
+        borderRadius: 4
+      },
+      {
+        label: 'Target Volume (t)',
+        data: [28000, 28000, 14000],
+        backgroundColor: 'rgba(251,188,4,0.5)',
+        borderColor: '#fbbc04',
+        borderWidth: 1,
+        borderRadius: 4
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: {color:'#6b7fa8', font:{size:11}}
+      },
+      tooltip: {
+        backgroundColor: '#1c2330',
+        borderColor: '#21262d',
+        borderWidth: 1,
+        callbacks: {
+          label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.raw.toLocaleString() + 't'
+        }
+      }
+    },
+    scales: {
+      x: {ticks:{color:'#6b7fa8',font:{size:11}}, grid:{color:'rgba(33,38,45,0.8)'}},
+      y: {
+        ticks:{color:'#6b7fa8',font:{size:11},callback:v=>v.toLocaleString()+'t'},
+        grid:{color:'rgba(33,38,45,0.8)'}
+      }
+    }
+  }
+});
+
+function toggleSql() {
+  const pane = document.getElementById('sqlPane');
+  const lbl = document.getElementById('sql-toggle-lbl');
+  const chev = document.getElementById('sql-chevron');
+  const open = pane.classList.toggle('open');
+  lbl.textContent = open ? 'Hide SQL' : 'Show SQL';
+  chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+</script>
+</body>
+</html>

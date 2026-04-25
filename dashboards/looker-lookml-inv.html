@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Looker IDE – Inventory LookML</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--border:#21262d;--text:#e6edf3;--muted:#6b7fa8;--blue:#4285f4;--green:#34a853;--yellow:#fbbc04;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{background:#0d1117;border-bottom:1px solid var(--border);padding:0 1.5rem;height:48px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .topbar-left{display:flex;align-items:center;gap:1.5rem;}
+    .topbar-logo{display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:1rem;color:var(--blue);}
+    .breadcrumb{font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;}.breadcrumb span{color:var(--text);}
+    .topbar-right{display:flex;align-items:center;gap:0.75rem;}
+    .tb-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.75rem;border-radius:5px;font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.35rem;text-decoration:none;}
+    .tb-btn.blue{background:var(--blue);border-color:var(--blue);color:#fff;}
+    .ide-layout{display:flex;flex:1;overflow:hidden;}
+    .file-tree{width:220px;background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
+    .tree-header{padding:0.6rem 1rem;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);}
+    .tree-item{padding:0.4rem 1rem;font-size:0.78rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:0.5rem;transition:background 0.15s;text-decoration:none;}
+    .tree-item:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+    .tree-item.active{background:rgba(66,133,244,0.12);color:var(--blue);}
+    .tree-item i{font-size:0.7rem;width:12px;}
+    .tree-indent{padding-left:2rem;}
+    .tree-section{padding:0.5rem 0.75rem 0.25rem;font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:0.5rem;}
+    .editor-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .file-tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+    .file-tab{padding:0.5rem 1.25rem;font-size:0.78rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:0.5rem;border-right:1px solid var(--border);white-space:nowrap;}
+    .file-tab.active{background:var(--bg);color:var(--text);border-bottom:2px solid var(--blue);}
+    .code-pane{flex:1;overflow-y:auto;display:flex;}
+    .line-numbers{padding:1rem 0;background:var(--panel);border-right:1px solid var(--border);flex-shrink:0;text-align:right;user-select:none;}
+    .line-numbers span{display:block;padding:0 0.75rem;font-family:'Fira Code',monospace;font-size:0.78rem;line-height:1.6;color:#3a4a6b;}
+    .code-content{flex:1;padding:1rem 1.5rem;font-family:'Fira Code',monospace;font-size:0.78rem;line-height:1.6;overflow-x:auto;white-space:pre;}
+    .lk-kw{color:#4fc1ff;}.lk-prop{color:#9cdcfe;}.lk-tp{color:#f7c948;}.lk-str{color:#98c379;}.lk-ref{color:#56b6c2;}.lk-cmt{color:#6a7fa8;font-style:italic;}.lk-op{color:#ff9d7d;}.lk-brace{color:#ffd700;}
+    .status-bar{height:24px;background:#1b2333;border-top:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:1.5rem;flex-shrink:0;}
+    .status-item{font-size:0.67rem;color:var(--muted);display:flex;align-items:center;gap:0.3rem;}.status-item.ok{color:var(--green);}
+    .back-link{position:fixed;bottom:2rem;right:1.5rem;background:var(--blue);color:#fff;padding:0.55rem 1.1rem;border-radius:7px;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:0.4rem;z-index:100;text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><i class="fas fa-eye"></i> Looker IDE</div>
+    <div class="breadcrumb"><i class="fas fa-folder" style="font-size:0.65rem"></i> inventory_project <i class="fas fa-chevron-right" style="font-size:0.5rem;color:#3a4a6b"></i> <span id="bfile">inventory.model.lkml</span></div>
+  </div>
+  <div class="topbar-right">
+    <a href="looker-inventory.html" class="tb-btn"><i class="fas fa-table"></i> Inventory Dashboard</a>
+    <div class="tb-btn blue"><i class="fas fa-play"></i> Validate LookML</div>
+  </div>
+</div>
+<div class="ide-layout">
+  <div class="file-tree">
+    <div class="tree-header"><i class="fas fa-folder-open" style="margin-right:0.4rem"></i> inventory_project</div>
+    <div class="tree-section">Models</div>
+    <div class="tree-item active" onclick="sw('model',this)"><i class="fas fa-cube" style="color:#f7c948"></i> inventory.model.lkml</div>
+    <div class="tree-section">Views</div>
+    <div class="tree-item tree-indent" onclick="sw('stock',this)"><i class="fas fa-table" style="color:#56b6c2"></i> stock.view.lkml</div>
+    <div class="tree-item tree-indent" onclick="sw('warehouse',this)"><i class="fas fa-table" style="color:#56b6c2"></i> warehouse.view.lkml</div>
+    <div class="tree-item tree-indent" onclick="sw('products',this)"><i class="fas fa-table" style="color:#56b6c2"></i> products.view.lkml</div>
+    <div class="tree-section">Dashboards</div>
+    <div class="tree-item tree-indent"><a href="looker-inventory.html" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:0.5rem;"><i class="fas fa-chart-bar" style="color:#4285f4"></i> inventory_overview.dashboard</a></div>
+  </div>
+  <div class="editor-area">
+    <div class="file-tabs">
+      <div class="file-tab active" id="tab-model" onclick="sw('model',this)"><i class="fas fa-cube" style="color:#f7c948;font-size:0.7rem"></i> inventory.model.lkml</div>
+      <div class="file-tab" id="tab-stock" onclick="sw('stock',this)"><i class="fas fa-table" style="color:#56b6c2;font-size:0.7rem"></i> stock.view.lkml</div>
+      <div class="file-tab" id="tab-warehouse" onclick="sw('warehouse',this)"><i class="fas fa-table" style="color:#56b6c2;font-size:0.7rem"></i> warehouse.view.lkml</div>
+    </div>
+    <div class="code-pane"><div class="line-numbers" id="ln"></div><div class="code-content" id="cc"></div></div>
+  </div>
+</div>
+<div class="status-bar">
+  <div class="status-item ok"><i class="fas fa-check-circle"></i> LookML valid — 0 errors</div>
+  <div class="status-item ok"><i class="fas fa-database"></i> bigquery_prod connected</div>
+  <div class="status-item"><i class="fas fa-code-branch"></i> branch: main</div>
+  <div class="status-item"><i class="fas fa-layer-group"></i> 3 views &nbsp;·&nbsp; 2 explores</div>
+</div>
+<a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Portfolio</a>
+<script>
+const F={
+model:{l:'inventory.model.lkml',c:`<span class="lk-cmt"># Inventory Management Model — BigQuery Production</span>
+
+<span class="lk-kw">connection</span>: <span class="lk-str">"bigquery_prod"</span>
+<span class="lk-kw">label</span>: <span class="lk-str">"Inventory Management"</span>
+
+<span class="lk-kw">include</span>: <span class="lk-str">"/views/stock.view.lkml"</span>
+<span class="lk-kw">include</span>: <span class="lk-str">"/views/warehouse.view.lkml"</span>
+<span class="lk-kw">include</span>: <span class="lk-str">"/views/products.view.lkml"</span>
+<span class="lk-kw">include</span>: <span class="lk-str">"/views/reorder_alerts.view.lkml"</span>
+
+<span class="lk-kw">explore</span>: stock_levels <span class="lk-brace">{</span>
+  <span class="lk-prop">label</span>: <span class="lk-str">"Stock Levels"</span>
+  <span class="lk-prop">description</span>: <span class="lk-str">"Current inventory, reorder status, and days of supply by SKU."</span>
+
+  <span class="lk-kw">join</span>: warehouse <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">left_outer</span>
+    <span class="lk-prop">sql_on</span>: <span class="lk-ref">${stock_levels.warehouse_id}</span> = <span class="lk-ref">${warehouse.warehouse_id}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">relationship</span>: <span class="lk-tp">many_to_one</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">join</span>: products <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">left_outer</span>
+    <span class="lk-prop">sql_on</span>: <span class="lk-ref">${stock_levels.sku_id}</span> = <span class="lk-ref">${products.sku_id}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">relationship</span>: <span class="lk-tp">many_to_one</span>
+  <span class="lk-brace">}</span>
+<span class="lk-brace">}</span>
+
+<span class="lk-kw">explore</span>: reorder_alerts <span class="lk-brace">{</span>
+  <span class="lk-prop">label</span>: <span class="lk-str">"Reorder Alerts"</span>
+  <span class="lk-prop">description</span>: <span class="lk-str">"SKUs at or below reorder threshold requiring procurement action."</span>
+<span class="lk-brace">}</span>`},
+stock:{l:'stock.view.lkml',c:`<span class="lk-kw">view</span>: stock_levels <span class="lk-brace">{</span>
+  <span class="lk-prop">sql_table_name</span>: <span class="lk-str">\`inventory_prod.stock\`</span> <span class="lk-op">;;</span>
+
+  <span class="lk-kw">dimension</span>: sku_id <span class="lk-brace">{</span>
+    <span class="lk-prop">primary_key</span>: <span class="lk-tp">yes</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.sku_id <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: product_name <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.product_name <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: category <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.category <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: current_qty <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.current_qty <span class="lk-op">;;</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Current Qty (tonnes)"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: reorder_point <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.reorder_point <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: days_of_supply <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.current_qty / NULLIF(<span class="lk-ref">${TABLE}</span>.avg_daily_consumption, 0) <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format</span>: <span class="lk-str">"0.0"</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Days of Supply"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: is_low_stock <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">yesno</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.current_qty &lt; <span class="lk-ref">${TABLE}</span>.reorder_point <span class="lk-op">;;</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Is Low Stock"</span>
+  <span class="lk-brace">}</span>
+
+  <span class="lk-kw">measure</span>: count <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">count</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"SKU Count"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: total_stock_value <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">sum</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.current_qty * <span class="lk-ref">${TABLE}</span>.unit_cost <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format_name</span>: usd_0
+    <span class="lk-prop">label</span>: <span class="lk-str">"Total Stock Value"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: low_stock_count <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">count</span>
+    <span class="lk-prop">filters</span>: <span class="lk-brace">[</span>is_low_stock: <span class="lk-str">"yes"</span><span class="lk-brace">]</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Low Stock SKUs"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: avg_days_supply <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">average</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${days_of_supply}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format</span>: <span class="lk-str">"0.0"</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Avg Days of Supply"</span>
+  <span class="lk-brace">}</span>
+<span class="lk-brace">}</span>`},
+warehouse:{l:'warehouse.view.lkml',c:`<span class="lk-kw">view</span>: warehouse <span class="lk-brace">{</span>
+  <span class="lk-prop">sql_table_name</span>: <span class="lk-str">\`inventory_prod.warehouses\`</span> <span class="lk-op">;;</span>
+
+  <span class="lk-kw">dimension</span>: warehouse_id <span class="lk-brace">{</span>
+    <span class="lk-prop">primary_key</span>: <span class="lk-tp">yes</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.warehouse_id <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: name <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.warehouse_name <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: location <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.location <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: capacity_tonnes <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.capacity_tonnes <span class="lk-op">;;</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Capacity (tonnes)"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: current_utilization_pct <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.current_utilization_pct <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format_name</span>: percent_1
+    <span class="lk-prop">label</span>: <span class="lk-str">"Utilization %"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: is_near_capacity <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">yesno</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.current_utilization_pct &gt; 85 <span class="lk-op">;;</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Near Capacity (&gt;85%)"</span>
+  <span class="lk-brace">}</span>
+
+  <span class="lk-kw">measure</span>: avg_utilization <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">average</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${current_utilization_pct}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format_name</span>: percent_1
+    <span class="lk-prop">label</span>: <span class="lk-str">"Avg Utilization"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: count <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">count</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Warehouse Count"</span>
+  <span class="lk-brace">}</span>
+<span class="lk-brace">}</span>`}
+};
+function sw(k,el){
+  document.querySelectorAll('.file-tab,.tree-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+k)?.classList.add('active');
+  if(el&&el.classList.contains('tree-item'))el.classList.add('active');
+  const f=F[k];
+  document.getElementById('bfile').textContent=f.l;
+  document.getElementById('cc').innerHTML=f.c;
+  const n=f.c.replace(/<[^>]+>/g,'').split('\n').length;
+  document.getElementById('ln').innerHTML=Array.from({length:n},(_,i)=>`<span>${i+1}</span>`).join('');
+}
+sw('model',document.querySelector('.tree-item.active'));
+</script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Looker IDE – Customers LookML</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--border:#21262d;--text:#e6edf3;--muted:#6b7fa8;--blue:#4285f4;--green:#34a853;--yellow:#fbbc04;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{background:#0d1117;border-bottom:1px solid var(--border);padding:0 1.5rem;height:48px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .topbar-left{display:flex;align-items:center;gap:1.5rem;}
+    .topbar-logo{display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:1rem;color:var(--blue);}
+    .breadcrumb{font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;}.breadcrumb span{color:var(--text);}
+    .topbar-right{display:flex;align-items:center;gap:0.75rem;}
+    .tb-btn{background:var(--panel2);border:1px solid var(--border);color:var(--muted);padding:0.3rem 0.75rem;border-radius:5px;font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.35rem;text-decoration:none;}
+    .tb-btn.blue{background:var(--blue);border-color:var(--blue);color:#fff;}
+    .ide-layout{display:flex;flex:1;overflow:hidden;}
+    .file-tree{width:220px;background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
+    .tree-header{padding:0.6rem 1rem;font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);}
+    .tree-item{padding:0.4rem 1rem;font-size:0.78rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:0.5rem;transition:background 0.15s;text-decoration:none;}
+    .tree-item:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+    .tree-item.active{background:rgba(66,133,244,0.12);color:var(--blue);}
+    .tree-item i{font-size:0.7rem;width:12px;}
+    .tree-indent{padding-left:2rem;}
+    .tree-section{padding:0.5rem 0.75rem 0.25rem;font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:0.5rem;}
+    .editor-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .file-tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+    .file-tab{padding:0.5rem 1.25rem;font-size:0.78rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:0.5rem;border-right:1px solid var(--border);white-space:nowrap;}
+    .file-tab.active{background:var(--bg);color:var(--text);border-bottom:2px solid var(--blue);}
+    .code-pane{flex:1;overflow-y:auto;display:flex;}
+    .line-numbers{padding:1rem 0;background:var(--panel);border-right:1px solid var(--border);flex-shrink:0;text-align:right;user-select:none;}
+    .line-numbers span{display:block;padding:0 0.75rem;font-family:'Fira Code',monospace;font-size:0.78rem;line-height:1.6;color:#3a4a6b;}
+    .code-content{flex:1;padding:1rem 1.5rem;font-family:'Fira Code',monospace;font-size:0.78rem;line-height:1.6;overflow-x:auto;white-space:pre;}
+    .lk-kw{color:#4fc1ff;}.lk-prop{color:#9cdcfe;}.lk-tp{color:#f7c948;}.lk-str{color:#98c379;}.lk-ref{color:#56b6c2;}.lk-cmt{color:#6a7fa8;font-style:italic;}.lk-op{color:#ff9d7d;}.lk-brace{color:#ffd700;}
+    .status-bar{height:24px;background:#1b2333;border-top:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:1.5rem;flex-shrink:0;}
+    .status-item{font-size:0.67rem;color:var(--muted);display:flex;align-items:center;gap:0.3rem;}.status-item.ok{color:var(--green);}
+    .back-link{position:fixed;bottom:2rem;right:1.5rem;background:var(--blue);color:#fff;padding:0.55rem 1.1rem;border-radius:7px;font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:0.4rem;z-index:100;text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><i class="fas fa-eye"></i> Looker IDE</div>
+    <div class="breadcrumb"><i class="fas fa-folder" style="font-size:0.65rem"></i> customers_project <i class="fas fa-chevron-right" style="font-size:0.5rem;color:#3a4a6b"></i> <span id="bfile">customers.model.lkml</span></div>
+  </div>
+  <div class="topbar-right">
+    <a href="looker-customer360.html" class="tb-btn"><i class="fas fa-table"></i> Customer 360 Dashboard</a>
+    <div class="tb-btn blue"><i class="fas fa-play"></i> Validate LookML</div>
+  </div>
+</div>
+<div class="ide-layout">
+  <div class="file-tree">
+    <div class="tree-header"><i class="fas fa-folder-open" style="margin-right:0.4rem"></i> customers_project</div>
+    <div class="tree-section">Models</div>
+    <div class="tree-item active" onclick="sw('model',this)"><i class="fas fa-cube" style="color:#f7c948"></i> customers.model.lkml</div>
+    <div class="tree-section">Views</div>
+    <div class="tree-item tree-indent" onclick="sw('clv',this)"><i class="fas fa-table" style="color:#56b6c2"></i> clv.view.lkml</div>
+    <div class="tree-item tree-indent" onclick="sw('segments',this)"><i class="fas fa-table" style="color:#56b6c2"></i> segments.view.lkml</div>
+    <div class="tree-item tree-indent" onclick="sw('interactions',this)"><i class="fas fa-table" style="color:#56b6c2"></i> interactions.view.lkml</div>
+    <div class="tree-section">Dashboards</div>
+    <div class="tree-item tree-indent"><a href="looker-customer360.html" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:0.5rem;"><i class="fas fa-chart-bar" style="color:#4285f4"></i> customer_360.dashboard</a></div>
+  </div>
+  <div class="editor-area">
+    <div class="file-tabs">
+      <div class="file-tab active" id="tab-model" onclick="sw('model',this)"><i class="fas fa-cube" style="color:#f7c948;font-size:0.7rem"></i> customers.model.lkml</div>
+      <div class="file-tab" id="tab-clv" onclick="sw('clv',this)"><i class="fas fa-table" style="color:#56b6c2;font-size:0.7rem"></i> clv.view.lkml</div>
+      <div class="file-tab" id="tab-segments" onclick="sw('segments',this)"><i class="fas fa-table" style="color:#56b6c2;font-size:0.7rem"></i> segments.view.lkml</div>
+      <div class="file-tab" id="tab-interactions" onclick="sw('interactions',this)"><i class="fas fa-table" style="color:#56b6c2;font-size:0.7rem"></i> interactions.view.lkml</div>
+    </div>
+    <div class="code-pane"><div class="line-numbers" id="ln"></div><div class="code-content" id="cc"></div></div>
+  </div>
+</div>
+<div class="status-bar">
+  <div class="status-item ok"><i class="fas fa-check-circle"></i> LookML valid — 0 errors</div>
+  <div class="status-item ok"><i class="fas fa-database"></i> bigquery_prod connected</div>
+  <div class="status-item"><i class="fas fa-code-branch"></i> branch: main</div>
+  <div class="status-item"><i class="fas fa-layer-group"></i> 4 views &nbsp;·&nbsp; 2 explores</div>
+</div>
+<a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Portfolio</a>
+<script>
+const F={
+model:{l:'customers.model.lkml',c:`<span class="lk-cmt"># Customer Analytics Model — BigQuery Production</span>
+
+<span class="lk-kw">connection</span>: <span class="lk-str">"bigquery_prod"</span>
+<span class="lk-kw">label</span>: <span class="lk-str">"Customer Analytics"</span>
+
+<span class="lk-kw">include</span>: <span class="lk-str">"/views/customers.view.lkml"</span>
+<span class="lk-kw">include</span>: <span class="lk-str">"/views/clv.view.lkml"</span>
+<span class="lk-kw">include</span>: <span class="lk-str">"/views/segments.view.lkml"</span>
+<span class="lk-kw">include</span>: <span class="lk-str">"/views/interactions.view.lkml"</span>
+
+<span class="lk-kw">explore</span>: customers <span class="lk-brace">{</span>
+  <span class="lk-prop">label</span>: <span class="lk-str">"Customers"</span>
+  <span class="lk-prop">description</span>: <span class="lk-str">"Customer profiles, lifetime value, and segment membership."</span>
+
+  <span class="lk-kw">access_filter</span>: <span class="lk-brace">{</span>
+    <span class="lk-prop">field</span>: customers.region
+    <span class="lk-prop">user_attribute</span>: region
+  <span class="lk-brace">}</span>
+
+  <span class="lk-kw">join</span>: clv <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">left_outer</span>
+    <span class="lk-prop">sql_on</span>: <span class="lk-ref">${customers.customer_id}</span> = <span class="lk-ref">${clv.customer_id}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">relationship</span>: <span class="lk-tp">one_to_one</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">join</span>: segments <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">left_outer</span>
+    <span class="lk-prop">sql_on</span>: <span class="lk-ref">${customers.segment_id}</span> = <span class="lk-ref">${segments.segment_id}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">relationship</span>: <span class="lk-tp">many_to_one</span>
+  <span class="lk-brace">}</span>
+<span class="lk-brace">}</span>
+
+<span class="lk-kw">explore</span>: interactions <span class="lk-brace">{</span>
+  <span class="lk-prop">label</span>: <span class="lk-str">"Customer Interactions"</span>
+  <span class="lk-prop">description</span>: <span class="lk-str">"NPS surveys, support tickets, and touchpoint history."</span>
+
+  <span class="lk-kw">join</span>: customers <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">left_outer</span>
+    <span class="lk-prop">sql_on</span>: <span class="lk-ref">${interactions.customer_id}</span> = <span class="lk-ref">${customers.customer_id}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">relationship</span>: <span class="lk-tp">many_to_one</span>
+  <span class="lk-brace">}</span>
+<span class="lk-brace">}</span>`},
+clv:{l:'clv.view.lkml',c:`<span class="lk-kw">view</span>: clv <span class="lk-brace">{</span>
+  <span class="lk-kw">derived_table</span>: <span class="lk-brace">{</span>
+    <span class="lk-prop">sql</span>:
+      SELECT
+        o.customer_id,
+        SUM(o.order_total)                          AS lifetime_value,
+        COUNT(DISTINCT o.order_id)                  AS total_orders,
+        MIN(o.created_at)                           AS first_order_date,
+        MAX(o.created_at)                           AS last_order_date,
+        SAFE_DIVIDE(SUM(o.order_total), COUNT(DISTINCT o.order_id)) AS avg_order_value
+      FROM sales_prod.orders o
+      WHERE o.status = 'complete'
+      GROUP BY 1 <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+
+  <span class="lk-kw">dimension</span>: customer_id <span class="lk-brace">{</span>
+    <span class="lk-prop">primary_key</span>: <span class="lk-tp">yes</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.customer_id <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: lifetime_value <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.lifetime_value <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format_name</span>: usd
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: clv_tier <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>:
+      CASE
+        WHEN <span class="lk-ref">${TABLE}</span>.lifetime_value >= 10000 THEN <span class="lk-str">'Platinum'</span>
+        WHEN <span class="lk-ref">${TABLE}</span>.lifetime_value >= 5000  THEN <span class="lk-str">'Gold'</span>
+        WHEN <span class="lk-ref">${TABLE}</span>.lifetime_value >= 1000  THEN <span class="lk-str">'Silver'</span>
+        ELSE <span class="lk-str">'Bronze'</span>
+      END <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: predicted_churn_score <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.predicted_churn_score <span class="lk-op">;;</span>
+    <span class="lk-prop">description</span>: <span class="lk-str">"ML-derived churn probability 0–1. Refreshed nightly."</span>
+  <span class="lk-brace">}</span>
+
+  <span class="lk-kw">measure</span>: avg_clv <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">average</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${lifetime_value}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format_name</span>: usd
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: total_clv <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">sum</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${lifetime_value}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format_name</span>: usd_0
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: high_value_count <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">count</span>
+    <span class="lk-prop">filters</span>: <span class="lk-brace">[</span>clv_tier: <span class="lk-str">"Platinum,Gold"</span><span class="lk-brace">]</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"High Value Customers"</span>
+  <span class="lk-brace">}</span>
+<span class="lk-brace">}</span>`},
+segments:{l:'segments.view.lkml',c:`<span class="lk-kw">view</span>: segments <span class="lk-brace">{</span>
+  <span class="lk-prop">sql_table_name</span>: <span class="lk-str">\`sales_prod.customer_segments\`</span> <span class="lk-op">;;</span>
+
+  <span class="lk-kw">dimension</span>: segment_id <span class="lk-brace">{</span>
+    <span class="lk-prop">primary_key</span>: <span class="lk-tp">yes</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.segment_id <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: segment_name <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.segment_name <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: criteria <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.criteria <span class="lk-op">;;</span>
+    <span class="lk-prop">description</span>: <span class="lk-str">"Human-readable rule description for this segment."</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: min_orders <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.min_orders <span class="lk-op">;;</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Minimum Orders Required"</span>
+  <span class="lk-brace">}</span>
+
+  <span class="lk-kw">measure</span>: count <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">count</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Segment Count"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: avg_clv_in_segment <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">average</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.avg_clv <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format_name</span>: usd
+    <span class="lk-prop">label</span>: <span class="lk-str">"Avg CLV in Segment"</span>
+  <span class="lk-brace">}</span>
+<span class="lk-brace">}</span>`},
+interactions:{l:'interactions.view.lkml',c:`<span class="lk-kw">view</span>: interactions <span class="lk-brace">{</span>
+  <span class="lk-prop">sql_table_name</span>: <span class="lk-str">\`sales_prod.customer_interactions\`</span> <span class="lk-op">;;</span>
+
+  <span class="lk-kw">dimension</span>: interaction_id <span class="lk-brace">{</span>
+    <span class="lk-prop">primary_key</span>: <span class="lk-tp">yes</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.interaction_id <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: customer_id <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">hidden</span>: <span class="lk-tp">yes</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.customer_id <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: interaction_type <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">string</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.interaction_type <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension</span>: nps_score <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.nps_score <span class="lk-op">;;</span>
+    <span class="lk-prop">description</span>: <span class="lk-str">"Net Promoter Score 0–10 collected at interaction close."</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">dimension_group</span>: interaction <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">time</span>
+    <span class="lk-prop">timeframes</span>: <span class="lk-brace">[</span>date, month, year<span class="lk-brace">]</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${TABLE}</span>.interaction_at <span class="lk-op">;;</span>
+  <span class="lk-brace">}</span>
+
+  <span class="lk-kw">measure</span>: count <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">count</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: avg_nps <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">average</span>
+    <span class="lk-prop">sql</span>: <span class="lk-ref">${nps_score}</span> <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format</span>: <span class="lk-str">"0.0"</span>
+    <span class="lk-prop">label</span>: <span class="lk-str">"Avg NPS Score"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: promoter_rate <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: COUNTIF(<span class="lk-ref">${TABLE}</span>.nps_score >= 9) / NULLIF(COUNT(*), 0) <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format_name</span>: percent_1
+    <span class="lk-prop">label</span>: <span class="lk-str">"Promoter Rate"</span>
+  <span class="lk-brace">}</span>
+  <span class="lk-kw">measure</span>: detractor_rate <span class="lk-brace">{</span>
+    <span class="lk-prop">type</span>: <span class="lk-tp">number</span>
+    <span class="lk-prop">sql</span>: COUNTIF(<span class="lk-ref">${TABLE}</span>.nps_score <= 6) / NULLIF(COUNT(*), 0) <span class="lk-op">;;</span>
+    <span class="lk-prop">value_format_name</span>: percent_1
+    <span class="lk-prop">label</span>: <span class="lk-str">"Detractor Rate"</span>
+  <span class="lk-brace">}</span>
+<span class="lk-brace">}</span>`}
+};
+function sw(k,el){
+  document.querySelectorAll('.file-tab,.tree-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+k)?.classList.add('active');
+  if(el&&el.classList.contains('tree-item'))el.classList.add('active');
+  const f=F[k];
+  document.getElementById('bfile').textContent=f.l;
+  document.getElementById('cc').innerHTML=f.c;
+  const n=f.c.replace(/<[^>]+>/g,'').split('\n').length;
+  document.getElementById('ln').innerHTML=Array.from({length:n},(_,i)=>`<span>${i+1}</span>`).join('');
+}
+sw('model',document.querySelector('.tree-item.active'));
+</script>
+</body>
+</html>
