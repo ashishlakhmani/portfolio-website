@@ -256,6 +256,51 @@
       </div>
     </div>
 
+    <!-- TOP PRODUCTS (horiz bar) + MoM GROWTH (area) -->
+    <div class="chart-row">
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Top Products by Revenue</div>
+          <div class="chart-badge">BigQuery · products</div>
+        </div>
+        <canvas id="topProductsChart" height="150"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Month-over-Month Growth %</div>
+          <div class="chart-badge">Calculated field</div>
+        </div>
+        <canvas id="momChart" height="150"></canvas>
+      </div>
+    </div>
+
+    <!-- REVENUE BY REGION (grouped bar) + SCATTER (Order Value vs Qty) -->
+    <div class="chart-row">
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Revenue by Region</div>
+          <div class="chart-badge">Current vs Prior Year</div>
+        </div>
+        <canvas id="regionBarChart" height="150"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title">Order Value vs Quantity</div>
+          <div class="chart-badge">Scatter · orders explore</div>
+        </div>
+        <canvas id="scatterChart" height="150"></canvas>
+      </div>
+    </div>
+
+    <!-- ORDERS HEATMAP BY DAY OF WEEK (full width) -->
+    <div class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title">Orders by Day of Week</div>
+        <div class="chart-badge">BigQuery · orders · last 90 days</div>
+      </div>
+      <canvas id="heatmapChart" height="70"></canvas>
+    </div>
+
     <!-- TABLE -->
     <div class="table-panel">
       <div class="table-header">
@@ -336,6 +381,66 @@ new Chart(document.getElementById('acqChart'), {
     ]
   },
   options: { ...defaults, responsive: true, scales: { ...defaults.scales, x: { ...defaults.scales.x, stacked: true }, y: { ...defaults.scales.y, stacked: true } } }
+});
+
+// Top Products (horizontal bar)
+new Chart(document.getElementById('topProductsChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Premium Feed Blend A','Poultry Supplement Pro','Hog Finishing Mix','Cattle Finisher XR','Layer Feed Standard','Specialty Additive Z'],
+    datasets: [{ label: 'Revenue ($K)', data: [1420, 1180, 980, 870, 740, 560], backgroundColor: 'rgba(66,133,244,0.75)', borderRadius: 4 }]
+  },
+  options: { ...defaults, indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: TICK, font: { size: 9 }, callback: v => '$'+v+'K' }, grid: { color: GRID } }, y: { ticks: { color: TICK, font: { size: 9 } }, grid: { display: false } } } }
+});
+
+// Month-over-Month Growth % (area)
+new Chart(document.getElementById('momChart'), {
+  type: 'line',
+  data: {
+    labels: ['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [{ label: 'MoM Growth %', data: [10.3,-4.7,24.6,7.9,12.2,-6.5,14.0,4.1,5.9,7.4,-12.1], borderColor: '#34a853', backgroundColor: 'rgba(52,168,83,0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#34a853' }]
+  },
+  options: { ...defaults, responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: TICK, font: { size: 9 } }, grid: { color: GRID } }, y: { ticks: { color: TICK, font: { size: 9 }, callback: v => v+'%' }, grid: { color: GRID } } } }
+});
+
+// Revenue by Region — Grouped Bar (Current vs Prior Year)
+new Chart(document.getElementById('regionBarChart'), {
+  type: 'bar',
+  data: {
+    labels: ['West','North','Central','East','South'],
+    datasets: [
+      { label: 'Current Year', data: [1350, 1010, 800, 590, 460], backgroundColor: 'rgba(66,133,244,0.75)', borderRadius: 4 },
+      { label: 'Prior Year',   data: [1140,  880, 720, 510, 420], backgroundColor: 'rgba(251,188,4,0.6)',  borderRadius: 4 }
+    ]
+  },
+  options: { ...defaults, responsive: true, scales: { x: { ticks: { color: TICK, font: { size: 9 } }, grid: { color: GRID } }, y: { ticks: { color: TICK, font: { size: 9 }, callback: v => '$'+v+'K' }, grid: { color: GRID } } } }
+});
+
+// Scatter — Order Value vs Quantity
+new Chart(document.getElementById('scatterChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      { label: 'Feed Blends',  data: Array.from({length:40}, () => ({ x: +(Math.random()*200+10).toFixed(0), y: +(Math.random()*2000+200).toFixed(0) })), backgroundColor: 'rgba(66,133,244,0.55)', pointRadius: 4 },
+      { label: 'Supplements',  data: Array.from({length:30}, () => ({ x: +(Math.random()*120+5).toFixed(0),  y: +(Math.random()*1500+100).toFixed(0) })), backgroundColor: 'rgba(52,168,83,0.55)',  pointRadius: 4 },
+      { label: 'Finishers',    data: Array.from({length:25}, () => ({ x: +(Math.random()*90+20).toFixed(0),  y: +(Math.random()*3000+500).toFixed(0) })), backgroundColor: 'rgba(251,188,4,0.65)',  pointRadius: 4 }
+    ]
+  },
+  options: { ...defaults, responsive: true, scales: { x: { ticks: { color: TICK, font: { size: 9 } }, grid: { color: GRID }, title: { display: true, text: 'Quantity (units)', color: TICK, font: { size: 9 } } }, y: { ticks: { color: TICK, font: { size: 9 }, callback: v => '$'+v }, grid: { color: GRID }, title: { display: true, text: 'Order Value ($)', color: TICK, font: { size: 9 } } } } }
+});
+
+// Orders Heatmap by Day of Week (bar chart styled as heatmap)
+new Chart(document.getElementById('heatmapChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+    datasets: [
+      { label: 'Morning (6–12)',   data: [420, 510, 490, 530, 480, 210, 140], backgroundColor: 'rgba(66,133,244,0.5)',  borderRadius: 3 },
+      { label: 'Afternoon (12–18)',data: [680, 720, 700, 760, 810, 390, 280], backgroundColor: 'rgba(66,133,244,0.75)', borderRadius: 3 },
+      { label: 'Evening (18–24)', data: [310, 340, 290, 380, 560, 430, 320], backgroundColor: 'rgba(66,133,244,0.95)', borderRadius: 3 }
+    ]
+  },
+  options: { ...defaults, responsive: true, scales: { x: { ticks: { color: TICK, font: { size: 10 } }, grid: { display: false } }, y: { ticks: { color: TICK, font: { size: 9 } }, grid: { color: GRID }, title: { display: true, text: 'Orders', color: TICK, font: { size: 9 } } } } }
 });
 </script>
 </body>
