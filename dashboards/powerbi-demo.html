@@ -70,7 +70,7 @@
     .kpi-sparkline { position: absolute; bottom: 0; right: 0; opacity: 0.4; }
 
     /* MAIN GRID */
-    .main-grid { display: grid; grid-template-columns: 2fr 1.2fr 1fr; gap: 0.85rem; }
+    .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 0.85rem; }
     .side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
 
     /* VISUAL PANELS */
@@ -226,12 +226,6 @@
       <canvas id="churnTrendChart" height="130"></canvas>
     </div>
 
-    <!-- CHURN DONUT -->
-    <div class="visual">
-      <div class="visual-title">Customer Status Distribution <div class="visual-menu"><i class="fas fa-ellipsis-h"></i></div></div>
-      <canvas id="churnDonut" height="155"></canvas>
-    </div>
-
     <!-- GAUGE -->
     <div class="visual">
       <div class="visual-title">Churn Risk Score <div class="visual-menu"><i class="fas fa-ellipsis-h"></i></div></div>
@@ -319,16 +313,6 @@ new Chart(document.getElementById('churnTrendChart'), {
       y: { ticks: { color: T, font: { size: 9 }, callback: v => v + '%' }, grid: { color: G }, min: 0, max: 100 }
     }
   }
-});
-
-// Churn Donut
-new Chart(document.getElementById('churnDonut'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Retained (93.6%)', 'At-Risk (15.6%)', 'Churned (6.4%)'],
-    datasets: [{ data: [78, 15.6, 6.4], backgroundColor: ['#14a614','#f2c811','#d13438'], borderWidth: 0, hoverOffset: 5 }]
-  },
-  options: { responsive: true, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { color: T, font: { size: 9 }, boxWidth: 10, padding: 8 } }, tooltip: tip } }
 });
 
 // Gauge
