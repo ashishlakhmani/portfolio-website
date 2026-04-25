@@ -225,43 +225,28 @@
       </div>
     </div>
 
-    <!-- REVENUE TREND + REGION PIE -->
-    <div class="chart-row">
-      <div class="chart-panel">
-        <div class="chart-header">
-          <div class="chart-title">Monthly Revenue vs Target</div>
-          <div style="display:flex;gap:0.5rem;align-items:center">
-            <div class="chart-badge">BigQuery · orders</div>
-            <div class="chart-toggle">
-              <button class="toggle-btn active">Monthly</button>
-              <button class="toggle-btn">Weekly</button>
-            </div>
+    <!-- REVENUE TREND (full width) -->
+    <div class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title">Monthly Revenue vs Target</div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <div class="chart-badge">BigQuery · orders</div>
+          <div class="chart-toggle">
+            <button class="toggle-btn active">Monthly</button>
+            <button class="toggle-btn">Weekly</button>
           </div>
         </div>
-        <canvas id="revTrendChart" height="130"></canvas>
       </div>
-      <div class="chart-panel">
-        <div class="chart-header">
-          <div class="chart-title">Revenue by Region</div>
-          <div class="chart-badge">Drill-through enabled</div>
-        </div>
-        <canvas id="regionPieChart" height="165"></canvas>
-      </div>
+      <canvas id="revTrendChart" height="90"></canvas>
     </div>
 
-    <!-- PRODUCT CATEGORY + ORDER STATUS + CUSTOMER SEGMENT -->
-    <div class="chart-row-3">
+    <!-- PRODUCT CATEGORY + CUSTOMER ACQUISITION -->
+    <div class="chart-row">
       <div class="chart-panel">
         <div class="chart-header">
           <div class="chart-title">Revenue by Category</div>
         </div>
         <canvas id="categoryChart" height="150"></canvas>
-      </div>
-      <div class="chart-panel">
-        <div class="chart-header">
-          <div class="chart-title">Orders by Status</div>
-        </div>
-        <canvas id="statusChart" height="150"></canvas>
       </div>
       <div class="chart-panel">
         <div class="chart-header">
@@ -330,16 +315,6 @@ new Chart(document.getElementById('revTrendChart'), {
   options: { ...defaults, responsive: true, scales: { ...defaults.scales, y: { ...defaults.scales.y, ticks: { ...defaults.scales.y.ticks, callback: v => '$' + v + 'K' } } } }
 });
 
-// Region Pie
-new Chart(document.getElementById('regionPieChart'), {
-  type: 'doughnut',
-  data: {
-    labels: ['West', 'North', 'Central', 'East', 'South'],
-    datasets: [{ data: [32, 24, 19, 14, 11], backgroundColor: ['#4285f4','#34a853','#fbbc04','#9b59b6','#ea4335'], borderWidth: 0, hoverOffset: 6 }]
-  },
-  options: { responsive: true, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: TICK, font: { size: 10 }, boxWidth: 10, padding: 6 } }, tooltip: { backgroundColor: '#0d1117' } } }
-});
-
 // Category Bar
 new Chart(document.getElementById('categoryChart'), {
   type: 'bar',
@@ -348,16 +323,6 @@ new Chart(document.getElementById('categoryChart'), {
     datasets: [{ label: 'Revenue ($K)', data: [1420, 980, 870, 640], backgroundColor: ['#4285f4','#34a853','#fbbc04','#9b59b6'], borderRadius: 4 }]
   },
   options: { ...defaults, responsive: true, plugins: { legend: { display: false } }, scales: { ...defaults.scales, y: { ...defaults.scales.y, ticks: { ...defaults.scales.y.ticks, callback: v => '$' + v + 'K' } } } }
-});
-
-// Order Status
-new Chart(document.getElementById('statusChart'), {
-  type: 'pie',
-  data: {
-    labels: ['Completed', 'Processing', 'Pending', 'Cancelled'],
-    datasets: [{ data: [68, 18, 9, 5], backgroundColor: ['#34a853','#4285f4','#fbbc04','#ea4335'], borderWidth: 0 }]
-  },
-  options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: TICK, font: { size: 9 }, boxWidth: 10, padding: 6 } }, tooltip: { backgroundColor: '#0d1117' } } }
 });
 
 // Customer Acquisition
