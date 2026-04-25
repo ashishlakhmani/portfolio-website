@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Looker – Customer 360</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#1a1f2e;--sidebar:#0f1420;--panel:#1e2537;--border:#2a3349;--text:#e2e8f0;--muted:#6b7fa8;--blue:#4285f4;--green:#34a853;--yellow:#fbbc04;--red:#ea4335;--purple:#9b59b6; }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+    .topbar{background:#0d1117;border-bottom:1px solid var(--border);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .topbar-left{display:flex;align-items:center;gap:1.5rem;}
+    .topbar-logo{display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:1.05rem;color:var(--blue);}
+    .breadcrumb{font-size:0.8rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;}
+    .breadcrumb span{color:var(--text);}
+    .topbar-right{display:flex;align-items:center;gap:1rem;}
+    .topbar-btn{background:var(--blue);color:#fff;border:none;padding:0.4rem 1rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.4rem;}
+    .topbar-filters{display:flex;align-items:center;gap:0.75rem;}
+    .filter-chip{background:var(--panel);border:1px solid var(--border);padding:0.3rem 0.75rem;border-radius:20px;font-size:0.75rem;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:0.35rem;}
+    .filter-chip.active{border-color:var(--blue);color:var(--blue);}
+    .filter-chip i{font-size:0.65rem;}
+    .explore-badge{background:rgba(66,133,244,0.08);border:1px solid rgba(66,133,244,0.2);border-radius:8px;padding:0.6rem 1rem;font-size:0.75rem;color:var(--blue);display:flex;align-items:center;gap:0.5rem;}
+    .main{display:flex;flex:1;}
+    .sidebar{width:200px;background:var(--sidebar);border-right:1px solid var(--border);padding:1rem 0;flex-shrink:0;}
+    .sidebar-section{padding:0.5rem 1rem;font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:1rem;}
+    .sidebar-item{padding:0.5rem 1rem;font-size:0.82rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:0.6rem;transition:background 0.15s;text-decoration:none;}
+    .sidebar-item:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+    .sidebar-item.active{background:rgba(66,133,244,0.12);color:var(--blue);border-right:2px solid var(--blue);}
+    .sidebar-item i{width:14px;font-size:0.78rem;}
+    .content{flex:1;padding:1.25rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem;}
+    .dash-header{display:flex;align-items:center;justify-content:space-between;}
+    .dash-title{font-size:1.2rem;font-weight:700;color:#fff;}
+    .dash-meta{font-size:0.75rem;color:var(--muted);margin-top:0.2rem;}
+    .dash-meta span{color:var(--green);}
+    .dash-actions{display:flex;gap:0.6rem;}
+    .action-btn{background:var(--panel);border:1px solid var(--border);color:var(--muted);padding:0.35rem 0.75rem;border-radius:6px;font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.35rem;}
+    .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;}
+    .kpi-tile{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:1rem;position:relative;overflow:hidden;}
+    .kpi-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+    .kpi-tile.blue::before{background:var(--blue);}.kpi-tile.green::before{background:var(--green);}.kpi-tile.yellow::before{background:var(--yellow);}.kpi-tile.red::before{background:var(--red);}.kpi-tile.purple::before{background:var(--purple);}
+    .kpi-label{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem;}
+    .kpi-value{font-size:1.6rem;font-weight:700;color:#fff;line-height:1;}
+    .kpi-sub{font-size:0.7rem;margin-top:0.4rem;display:flex;align-items:center;gap:0.3rem;}
+    .kpi-up{color:var(--green);}.kpi-down{color:var(--red);}
+    .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .chart-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+    .chart-panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:1.1rem;}
+    .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+    .chart-title{font-size:0.85rem;font-weight:600;color:var(--text);}
+    .chart-badge{font-size:0.68rem;color:var(--muted);background:var(--bg);padding:0.2rem 0.5rem;border-radius:4px;}
+    .table-panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+    .table-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .table-title{font-size:0.85rem;font-weight:600;}
+    .table-search{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.3rem 0.75rem;font-size:0.75rem;color:var(--text);width:180px;outline:none;}
+    table{width:100%;border-collapse:collapse;}
+    thead tr{background:var(--bg);}
+    th{padding:0.65rem 1.25rem;text-align:left;font-size:0.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;}
+    td{padding:0.65rem 1.25rem;font-size:0.82rem;border-top:1px solid var(--border);}
+    tr:hover td{background:rgba(255,255,255,0.02);}
+    .seg-pill{padding:0.2rem 0.6rem;border-radius:12px;font-size:0.7rem;font-weight:600;}
+    .seg-pill.a{background:rgba(52,168,83,0.15);color:var(--green);}
+    .seg-pill.b{background:rgba(66,133,244,0.15);color:var(--blue);}
+    .seg-pill.c{background:rgba(251,188,4,0.15);color:var(--yellow);}
+    .seg-pill.d{background:rgba(234,67,53,0.15);color:var(--red);}
+    .back-link{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--blue);color:#fff;padding:0.6rem 1.2rem;border-radius:8px;font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.4rem;z-index:100;text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><i class="fas fa-eye"></i> Looker</div>
+    <div class="breadcrumb"><i class="fas fa-th-large" style="font-size:0.7rem"></i> Dashboards <i class="fas fa-chevron-right" style="font-size:0.55rem;color:#3a4a6b"></i> <span>Customer 360</span></div>
+  </div>
+  <div class="topbar-filters">
+    <div class="filter-chip active"><i class="fas fa-calendar"></i> FY 2025 <i class="fas fa-caret-down"></i></div>
+    <div class="filter-chip"><i class="fas fa-user-tag"></i> All Segments <i class="fas fa-caret-down"></i></div>
+    <div class="filter-chip"><i class="fas fa-map-marker-alt"></i> All Regions <i class="fas fa-caret-down"></i></div>
+  </div>
+  <div class="topbar-right">
+    <div class="explore-badge"><i class="fas fa-search-plus"></i> Explore from here</div>
+    <button class="topbar-btn"><i class="fas fa-share-alt"></i> Share</button>
+  </div>
+</div>
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-section">Dashboards</div>
+    <a href="looker-demo.html" class="sidebar-item"><i class="fas fa-chart-line"></i> Sales Overview</a>
+    <a href="looker-operations.html" class="sidebar-item"><i class="fas fa-industry"></i> Operations</a>
+    <a href="looker-customer360.html" class="sidebar-item active"><i class="fas fa-users"></i> Customer 360</a>
+    <a href="looker-inventory.html" class="sidebar-item"><i class="fas fa-box"></i> Inventory</a>
+    <div class="sidebar-section">Explores</div>
+    <div class="sidebar-item"><i class="fas fa-search"></i> Customers</div>
+    <div class="sidebar-item"><i class="fas fa-search"></i> Orders</div>
+    <div class="sidebar-item"><i class="fas fa-search"></i> Interactions</div>
+    <div class="sidebar-section">LookML</div>
+    <div class="sidebar-item"><i class="fas fa-code"></i> customers.model</div>
+    <div class="sidebar-item"><i class="fas fa-code"></i> clv.view</div>
+    <div class="sidebar-item"><i class="fas fa-code"></i> segments.view</div>
+  </div>
+  <div class="content">
+
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Customer 360 Analytics</div>
+        <div class="dash-meta">Last refreshed: Today at 08:30 AM &nbsp;&bull;&nbsp; Source: <span>BigQuery → customers_prod</span></div>
+      </div>
+      <div class="dash-actions">
+        <div class="action-btn"><i class="fas fa-sync-alt"></i> Refresh</div>
+        <div class="action-btn"><i class="fas fa-download"></i> Export</div>
+        <div class="action-btn"><i class="fas fa-bell"></i> Alerts</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-tile blue"><div class="kpi-label">Total Customers</div><div class="kpi-value">4,821</div><div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +11.2% YoY</div></div>
+      <div class="kpi-tile green"><div class="kpi-label">Avg CLV</div><div class="kpi-value">$48,200</div><div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +8.4% YoY</div></div>
+      <div class="kpi-tile yellow"><div class="kpi-label">NPS Score</div><div class="kpi-value">67</div><div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +5pts YoY</div></div>
+      <div class="kpi-tile red"><div class="kpi-label">Churn Rate</div><div class="kpi-value">3.8%</div><div class="kpi-sub kpi-up"><i class="fas fa-arrow-down"></i> -1.1pp YoY</div></div>
+      <div class="kpi-tile purple"><div class="kpi-label">Avg Order Freq.</div><div class="kpi-value">6.2 / yr</div><div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +0.4 YoY</div></div>
+    </div>
+
+    <!-- Customer Growth full width -->
+    <div class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title">Customer Base Growth & Churn Over Time</div>
+        <div class="chart-badge">BigQuery · customers</div>
+      </div>
+      <canvas id="growthChart" height="80"></canvas>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">CLV by Customer Segment</div><div class="chart-badge">clv.view</div></div>
+        <canvas id="clvChart" height="160"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">NPS Trend (Promoters vs Detractors)</div><div class="chart-badge">interactions.view</div></div>
+        <canvas id="npsChart" height="160"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-row-3">
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">Customer Segment Mix</div><div class="chart-badge">segments.view</div></div>
+        <canvas id="segMixChart" height="160"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">Order Frequency Distribution</div><div class="chart-badge">orders.view</div></div>
+        <canvas id="freqChart" height="160"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">Tenure vs CLV Scatter</div><div class="chart-badge">Scatter</div></div>
+        <canvas id="tenureScatter" height="160"></canvas>
+      </div>
+    </div>
+
+    <div class="table-panel">
+      <div class="table-header">
+        <div class="table-title">Top Customers – LookML Explore: customers</div>
+        <input class="table-search" placeholder="Search customers..." />
+      </div>
+      <table>
+        <thead><tr><th>Customer ID</th><th>Name</th><th>Segment</th><th>CLV</th><th>Orders / Yr</th><th>Tenure</th><th>NPS</th></tr></thead>
+        <tbody>
+          <tr><td>C-0041</td><td>Apex Livestock Co.</td><td><span class="seg-pill a">Enterprise</span></td><td>$182,400</td><td>18</td><td>7 yrs</td><td>9</td></tr>
+          <tr><td>C-0087</td><td>Northern Prairie Farms</td><td><span class="seg-pill a">Enterprise</span></td><td>$145,200</td><td>14</td><td>5 yrs</td><td>8</td></tr>
+          <tr><td>C-0124</td><td>Sunrise Poultry Ltd.</td><td><span class="seg-pill b">Mid-Market</span></td><td>$92,800</td><td>10</td><td>4 yrs</td><td>7</td></tr>
+          <tr><td>C-0203</td><td>Valley Beef Operations</td><td><span class="seg-pill b">Mid-Market</span></td><td>$74,100</td><td>8</td><td>3 yrs</td><td>6</td></tr>
+          <tr><td>C-0318</td><td>Prairie Harvest Inc.</td><td><span class="seg-pill c">Growth</span></td><td>$41,600</td><td>5</td><td>1 yr</td><td>8</td></tr>
+          <tr><td>C-0412</td><td>Great Plains Growers</td><td><span class="seg-pill d">At-Risk</span></td><td>$28,900</td><td>3</td><td>2 yrs</td><td>4</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+<a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const G='#2a3349',T='#6b7fa8';
+const tip={backgroundColor:'#0d1117',borderColor:G,borderWidth:1};
+
+new Chart(document.getElementById('growthChart'),{type:'line',data:{
+  labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  datasets:[
+    {label:'Total Customers',data:[4210,4280,4340,4390,4450,4520,4590,4640,4700,4750,4800,4821],borderColor:'#4285f4',backgroundColor:'rgba(66,133,244,0.08)',fill:true,tension:0.4,borderWidth:2.5,pointRadius:3},
+    {label:'Churned',data:[28,22,19,24,18,21,15,19,17,14,12,11],borderColor:'#ea4335',backgroundColor:'rgba(234,67,53,0.06)',fill:true,tension:0.4,borderWidth:2,pointRadius:3,yAxisID:'y1'}
+  ]
+},options:{responsive:true,plugins:{legend:{labels:{color:T,font:{size:10},boxWidth:10}},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:9}},grid:{color:G}},y:{ticks:{color:T,font:{size:9}},grid:{color:G}},y1:{position:'right',ticks:{color:T,font:{size:9}},grid:{display:false}}}}});
+
+new Chart(document.getElementById('clvChart'),{type:'bar',data:{
+  labels:['Enterprise','Mid-Market','Growth','At-Risk'],
+  datasets:[{label:'Avg CLV ($)',data:[163800,83450,38200,12400],backgroundColor:['#34a853','#4285f4','#fbbc04','#ea4335'],borderRadius:4}]
+},options:{responsive:true,plugins:{legend:{display:false},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:9}},grid:{display:false}},y:{ticks:{color:T,font:{size:9},callback:v=>'$'+(v/1000)+'K'},grid:{color:G}}}}});
+
+new Chart(document.getElementById('npsChart'),{type:'bar',data:{
+  labels:['Q1','Q2','Q3','Q4'],
+  datasets:[
+    {label:'Promoters',data:[58,62,64,68],backgroundColor:'rgba(52,168,83,0.7)',borderRadius:4},
+    {label:'Passives',data:[24,21,22,20],backgroundColor:'rgba(251,188,4,0.6)',borderRadius:4},
+    {label:'Detractors',data:[18,17,14,12],backgroundColor:'rgba(234,67,53,0.6)',borderRadius:4}
+  ]
+},options:{responsive:true,plugins:{legend:{labels:{color:T,font:{size:9},boxWidth:10}},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:10}},grid:{display:false},stacked:true},y:{ticks:{color:T,font:{size:9},callback:v=>v+'%'},grid:{color:G},stacked:true}}}});
+
+new Chart(document.getElementById('segMixChart'),{type:'bar',data:{
+  labels:['Enterprise','Mid-Market','Growth','At-Risk'],
+  datasets:[{label:'Customers',data:[420,1180,2340,881],backgroundColor:['#34a853','#4285f4','#fbbc04','#ea4335'],borderRadius:4}]
+},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:9}},grid:{color:G}},y:{ticks:{color:T,font:{size:9}},grid:{display:false}}}}});
+
+new Chart(document.getElementById('freqChart'),{type:'bar',data:{
+  labels:['1-2','3-4','5-6','7-8','9-10','11+'],
+  datasets:[{label:'Customers',data:[620,1240,1380,810,480,291],backgroundColor:'rgba(66,133,244,0.7)',borderRadius:4}]
+},options:{responsive:true,plugins:{legend:{display:false},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:9}},grid:{display:false},title:{display:true,text:'Orders / Year',color:T,font:{size:9}}},y:{ticks:{color:T,font:{size:9}},grid:{color:G}}}}});
+
+new Chart(document.getElementById('tenureScatter'),{type:'scatter',data:{datasets:[
+  {label:'Enterprise',data:Array.from({length:30},()=>({x:+(Math.random()*8+2).toFixed(1),y:+(Math.random()*80000+100000).toFixed(0)})),backgroundColor:'rgba(52,168,83,0.55)',pointRadius:5},
+  {label:'Mid-Market',data:Array.from({length:40},()=>({x:+(Math.random()*6+1).toFixed(1),y:+(Math.random()*50000+50000).toFixed(0)})),backgroundColor:'rgba(66,133,244,0.5)',pointRadius:4},
+  {label:'Growth',data:Array.from({length:50},()=>({x:+(Math.random()*3+0.5).toFixed(1),y:+(Math.random()*30000+10000).toFixed(0)})),backgroundColor:'rgba(251,188,4,0.55)',pointRadius:3}
+]},options:{responsive:true,plugins:{legend:{labels:{color:T,font:{size:9},boxWidth:8}},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:9}},grid:{color:G},title:{display:true,text:'Tenure (yrs)',color:T,font:{size:9}}},y:{ticks:{color:T,font:{size:9},callback:v=>'$'+(v/1000)+'K'},grid:{color:G},title:{display:true,text:'CLV ($)',color:T,font:{size:9}}}}}});
+</script>
+</body>
+</html>

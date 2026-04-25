@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Looker – Operations Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1a1f2e; --sidebar: #0f1420; --panel: #1e2537;
+      --border: #2a3349; --text: #e2e8f0; --muted: #6b7fa8;
+      --blue: #4285f4; --green: #34a853; --yellow: #fbbc04; --red: #ea4335; --purple: #9b59b6;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { background: #0d1117; border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 52px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .topbar-left { display: flex; align-items: center; gap: 1.5rem; }
+    .topbar-logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.05rem; color: var(--blue); }
+    .breadcrumb { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; }
+    .breadcrumb span { color: var(--text); }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .topbar-btn { background: var(--blue); color: #fff; border: none; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; }
+    .topbar-filters { display: flex; align-items: center; gap: 0.75rem; }
+    .filter-chip { background: var(--panel); border: 1px solid var(--border); padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.75rem; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 0.35rem; }
+    .filter-chip.active { border-color: var(--blue); color: var(--blue); }
+    .filter-chip i { font-size: 0.65rem; }
+    .explore-badge { background: rgba(66,133,244,0.08); border: 1px solid rgba(66,133,244,0.2); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.75rem; color: var(--blue); display: flex; align-items: center; gap: 0.5rem; }
+    .main { display: flex; flex: 1; }
+    .sidebar { width: 200px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 1rem 0; flex-shrink: 0; }
+    .sidebar-section { padding: 0.5rem 1rem; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 1rem; }
+    .sidebar-item { padding: 0.5rem 1rem; font-size: 0.82rem; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 0.6rem; transition: background 0.15s; text-decoration: none; }
+    .sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+    .sidebar-item.active { background: rgba(66,133,244,0.12); color: var(--blue); border-right: 2px solid var(--blue); }
+    .sidebar-item i { width: 14px; font-size: 0.78rem; }
+    .content { flex: 1; padding: 1.25rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+    .dash-header { display: flex; align-items: center; justify-content: space-between; }
+    .dash-title { font-size: 1.2rem; font-weight: 700; color: #fff; }
+    .dash-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+    .dash-meta span { color: var(--green); }
+    .dash-actions { display: flex; gap: 0.6rem; }
+    .action-btn { background: var(--panel); border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; }
+    .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+    .kpi-tile { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; position: relative; overflow: hidden; }
+    .kpi-tile::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .kpi-tile.blue::before { background: var(--blue); }
+    .kpi-tile.green::before { background: var(--green); }
+    .kpi-tile.yellow::before { background: var(--yellow); }
+    .kpi-tile.red::before { background: var(--red); }
+    .kpi-tile.purple::before { background: var(--purple); }
+    .kpi-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+    .kpi-value { font-size: 1.6rem; font-weight: 700; color: #fff; line-height: 1; }
+    .kpi-sub { font-size: 0.7rem; margin-top: 0.4rem; display: flex; align-items: center; gap: 0.3rem; }
+    .kpi-up { color: var(--green); } .kpi-down { color: var(--red); }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .chart-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .chart-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .chart-title { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .chart-badge { font-size: 0.68rem; color: var(--muted); background: var(--bg); padding: 0.2rem 0.5rem; border-radius: 4px; }
+    .chart-toggle { display: flex; gap: 0.3rem; }
+    .toggle-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.68rem; cursor: pointer; }
+    .toggle-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(66,133,244,0.1); }
+    .table-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .table-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-title { font-size: 0.85rem; font-weight: 600; }
+    .table-search { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.75rem; font-size: 0.75rem; color: var(--text); width: 180px; outline: none; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--bg); }
+    th { padding: 0.65rem 1.25rem; text-align: left; font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    td { padding: 0.65rem 1.25rem; font-size: 0.82rem; border-top: 1px solid var(--border); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .badge.green { background: rgba(52,168,83,0.15); color: var(--green); }
+    .badge.yellow { background: rgba(251,188,4,0.15); color: var(--yellow); }
+    .badge.red { background: rgba(234,67,53,0.15); color: var(--red); }
+    .progress-cell { display: flex; align-items: center; gap: 0.5rem; }
+    .prog-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 3px; }
+    .back-link { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--blue); color: #fff; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; z-index: 100; text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><i class="fas fa-eye"></i> Looker</div>
+    <div class="breadcrumb"><i class="fas fa-th-large" style="font-size:0.7rem"></i> Dashboards <i class="fas fa-chevron-right" style="font-size:0.55rem;color:#3a4a6b"></i> <span>Operations</span></div>
+  </div>
+  <div class="topbar-filters">
+    <div class="filter-chip active"><i class="fas fa-calendar"></i> Last 30 Days <i class="fas fa-caret-down"></i></div>
+    <div class="filter-chip"><i class="fas fa-industry"></i> All Plants <i class="fas fa-caret-down"></i></div>
+    <div class="filter-chip"><i class="fas fa-user-hard-hat"></i> All Shifts <i class="fas fa-caret-down"></i></div>
+  </div>
+  <div class="topbar-right">
+    <div class="explore-badge"><i class="fas fa-search-plus"></i> Explore from here</div>
+    <button class="topbar-btn"><i class="fas fa-share-alt"></i> Share</button>
+  </div>
+</div>
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-section">Dashboards</div>
+    <a href="looker-demo.html" class="sidebar-item"><i class="fas fa-chart-line"></i> Sales Overview</a>
+    <a href="looker-operations.html" class="sidebar-item active"><i class="fas fa-industry"></i> Operations</a>
+    <a href="looker-customer360.html" class="sidebar-item"><i class="fas fa-users"></i> Customer 360</a>
+    <a href="looker-inventory.html" class="sidebar-item"><i class="fas fa-box"></i> Inventory</a>
+    <div class="sidebar-section">Explores</div>
+    <div class="sidebar-item"><i class="fas fa-search"></i> Production</div>
+    <div class="sidebar-item"><i class="fas fa-search"></i> Equipment</div>
+    <div class="sidebar-item"><i class="fas fa-search"></i> Quality</div>
+    <div class="sidebar-section">LookML</div>
+    <div class="sidebar-item"><i class="fas fa-code"></i> operations.model</div>
+    <div class="sidebar-item"><i class="fas fa-code"></i> equipment.view</div>
+    <div class="sidebar-item"><i class="fas fa-code"></i> shifts.view</div>
+  </div>
+  <div class="content">
+
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Plant Operations Analytics</div>
+        <div class="dash-meta">Last refreshed: Today at 06:00 AM &nbsp;&bull;&nbsp; Source: <span>BigQuery → ops_prod</span></div>
+      </div>
+      <div class="dash-actions">
+        <div class="action-btn"><i class="fas fa-sync-alt"></i> Refresh</div>
+        <div class="action-btn"><i class="fas fa-download"></i> Export</div>
+        <div class="action-btn"><i class="fas fa-bell"></i> Alerts</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-tile green">
+        <div class="kpi-label">Production Volume</div>
+        <div class="kpi-value">84,210 t</div>
+        <div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +6.4% vs last month</div>
+      </div>
+      <div class="kpi-tile blue">
+        <div class="kpi-label">Efficiency Rate</div>
+        <div class="kpi-value">91.3%</div>
+        <div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +2.1pp vs last month</div>
+      </div>
+      <div class="kpi-tile red">
+        <div class="kpi-label">Downtime Hours</div>
+        <div class="kpi-value">142 hrs</div>
+        <div class="kpi-sub kpi-up"><i class="fas fa-arrow-down"></i> -18% vs last month</div>
+      </div>
+      <div class="kpi-tile yellow">
+        <div class="kpi-label">Quality Score</div>
+        <div class="kpi-value">97.8%</div>
+        <div class="kpi-sub kpi-up"><i class="fas fa-arrow-up"></i> +0.4pp vs last month</div>
+      </div>
+      <div class="kpi-tile purple">
+        <div class="kpi-label">On-Time Delivery</div>
+        <div class="kpi-value">94.5%</div>
+        <div class="kpi-sub kpi-down"><i class="fas fa-arrow-down"></i> -1.2pp vs last month</div>
+      </div>
+    </div>
+
+    <!-- Production Output (full width) -->
+    <div class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title">Daily Production Output vs Target</div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <div class="chart-badge">BigQuery · production</div>
+          <div class="chart-toggle"><button class="toggle-btn active">Daily</button><button class="toggle-btn">Weekly</button></div>
+        </div>
+      </div>
+      <canvas id="productionChart" height="80"></canvas>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">Equipment Utilization by Line</div><div class="chart-badge">equipment.view</div></div>
+        <canvas id="equipChart" height="160"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">Downtime by Cause</div><div class="chart-badge">Last 30 days</div></div>
+        <canvas id="downtimeChart" height="160"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-row-3">
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">Shift Performance</div><div class="chart-badge">shifts.view</div></div>
+        <canvas id="shiftChart" height="160"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">Quality Defect Rate Trend</div><div class="chart-badge">quality.view</div></div>
+        <canvas id="qualityChart" height="160"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-header"><div class="chart-title">Processing Time Distribution</div><div class="chart-badge">Scatter</div></div>
+        <canvas id="procTimeChart" height="160"></canvas>
+      </div>
+    </div>
+
+    <div class="table-panel">
+      <div class="table-header">
+        <div class="table-title">Equipment Status – LookML Explore: equipment</div>
+        <input class="table-search" placeholder="Search equipment..." />
+      </div>
+      <table>
+        <thead><tr><th>Line ID</th><th>Equipment</th><th>Plant</th><th>Utilization</th><th>Last Maintenance</th><th>Next Service</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>LN-01</td><td>Feed Mixer A</td><td>Steinbach</td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:92%;background:#34a853"></div></div>92%</div></td><td>Apr 10, 2025</td><td>Jul 10, 2025</td><td><span class="badge green">Operational</span></td></tr>
+          <tr><td>LN-02</td><td>Pellet Press B</td><td>Steinbach</td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:78%;background:#fbbc04"></div></div>78%</div></td><td>Mar 28, 2025</td><td>May 15, 2025</td><td><span class="badge yellow">Maintenance Due</span></td></tr>
+          <tr><td>LN-03</td><td>Conveyor System</td><td>Winnipeg</td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:95%;background:#34a853"></div></div>95%</div></td><td>Apr 18, 2025</td><td>Jul 18, 2025</td><td><span class="badge green">Operational</span></td></tr>
+          <tr><td>LN-04</td><td>Dryer Unit C</td><td>Winnipeg</td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:41%;background:#ea4335"></div></div>41%</div></td><td>Feb 14, 2025</td><td>Overdue</td><td><span class="badge red">Offline</span></td></tr>
+          <tr><td>LN-05</td><td>Packaging Line D</td><td>Steinbach</td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:88%;background:#34a853"></div></div>88%</div></td><td>Apr 22, 2025</td><td>Jul 22, 2025</td><td><span class="badge green">Operational</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+<a href="../index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const G='#2a3349',T='#6b7fa8';
+const tip={backgroundColor:'#0d1117',borderColor:G,borderWidth:1};
+const ax={x:{ticks:{color:T,font:{size:10}},grid:{color:G}},y:{ticks:{color:T,font:{size:10}},grid:{color:G}}};
+
+// Daily Production
+new Chart(document.getElementById('productionChart'),{type:'line',data:{
+  labels:['Apr 1','3','5','7','9','11','13','15','17','19','21','23','25'],
+  datasets:[
+    {label:'Actual (tonnes)',data:[2600,2750,2820,2690,2900,3010,2950,3100,3080,3200,3150,3300,3250],borderColor:'#34a853',backgroundColor:'rgba(52,168,83,0.08)',fill:true,tension:0.4,borderWidth:2.5,pointRadius:3},
+    {label:'Target',data:[2800,2800,2800,2800,2800,2800,2800,2800,2800,2800,2800,2800,2800],borderColor:'#fbbc04',borderWidth:1.5,borderDash:[5,4],pointRadius:0}
+  ]
+},options:{responsive:true,plugins:{legend:{labels:{color:T,font:{size:10},boxWidth:10}},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:9}},grid:{color:G}},y:{ticks:{color:T,font:{size:9},callback:v=>v+'t'},grid:{color:G}}}}});
+
+// Equipment Utilization
+new Chart(document.getElementById('equipChart'),{type:'bar',data:{
+  labels:['Feed Mixer A','Pellet Press B','Conveyor Sys','Dryer Unit C','Packaging D','Grinder E'],
+  datasets:[{label:'Utilization %',data:[92,78,95,41,88,83],backgroundColor:['#34a853','#fbbc04','#34a853','#ea4335','#34a853','#4285f4'],borderRadius:4}]
+},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:9},callback:v=>v+'%'},grid:{color:G},max:100},y:{ticks:{color:T,font:{size:9}},grid:{display:false}}}}});
+
+// Downtime
+new Chart(document.getElementById('downtimeChart'),{type:'bar',data:{
+  labels:['Mechanical','Scheduled PM','Power Outage','Material Shortage','Operator Error','Other'],
+  datasets:[{label:'Hours',data:[52,38,18,14,12,8],backgroundColor:['#ea4335','#fbbc04','#9b59b6','#4285f4','#34a853','#6b7fa8'],borderRadius:4}]
+},options:{responsive:true,plugins:{legend:{display:false},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:8}},grid:{display:false}},y:{ticks:{color:T,font:{size:9},callback:v=>v+'h'},grid:{color:G}}}}});
+
+// Shift Performance
+new Chart(document.getElementById('shiftChart'),{type:'bar',data:{
+  labels:['Day','Evening','Night'],
+  datasets:[
+    {label:'Volume (t)',data:[31200,28400,24610],backgroundColor:'rgba(66,133,244,0.75)',borderRadius:4},
+    {label:'Efficiency %',data:[93,91,88],backgroundColor:'rgba(52,168,83,0.6)',borderRadius:4,yAxisID:'y1'}
+  ]
+},options:{responsive:true,plugins:{legend:{labels:{color:T,font:{size:9},boxWidth:10}},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:10}},grid:{display:false}},y:{ticks:{color:T,font:{size:9}},grid:{color:G}},y1:{position:'right',ticks:{color:T,font:{size:9},callback:v=>v+'%'},grid:{display:false},max:100}}}});
+
+// Quality Defect Trend
+new Chart(document.getElementById('qualityChart'),{type:'line',data:{
+  labels:['Week 1','Week 2','Week 3','Week 4'],
+  datasets:[
+    {label:'Defect Rate %',data:[3.1,2.8,2.4,2.2],borderColor:'#ea4335',backgroundColor:'rgba(234,67,53,0.08)',fill:true,tension:0.4,borderWidth:2,pointRadius:4},
+    {label:'Target',data:[2.5,2.5,2.5,2.5],borderColor:'#fbbc04',borderDash:[5,4],borderWidth:1.5,pointRadius:0}
+  ]
+},options:{responsive:true,plugins:{legend:{labels:{color:T,font:{size:9},boxWidth:10}},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:9}},grid:{color:G}},y:{ticks:{color:T,font:{size:9},callback:v=>v+'%'},grid:{color:G}}}}});
+
+// Processing Time Scatter
+new Chart(document.getElementById('procTimeChart'),{type:'scatter',data:{datasets:[
+  {label:'Feed Blends',data:Array.from({length:30},()=>({x:+(Math.random()*60+20).toFixed(0),y:+(Math.random()*10+90).toFixed(1)})),backgroundColor:'rgba(66,133,244,0.55)',pointRadius:4},
+  {label:'Supplements',data:Array.from({length:20},()=>({x:+(Math.random()*40+15).toFixed(0),y:+(Math.random()*8+88).toFixed(1)})),backgroundColor:'rgba(52,168,83,0.6)',pointRadius:4}
+]},options:{responsive:true,plugins:{legend:{labels:{color:T,font:{size:9},boxWidth:8}},tooltip:tip},scales:{x:{ticks:{color:T,font:{size:9}},grid:{color:G},title:{display:true,text:'Processing Time (min)',color:T,font:{size:9}}},y:{ticks:{color:T,font:{size:9},callback:v=>v+'%'},grid:{color:G},title:{display:true,text:'Quality Score %',color:T,font:{size:9}}}}}});
+</script>
+</body>
+</html>
