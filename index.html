@@ -429,13 +429,13 @@
       </div>
       <form class="contact-form" action="https://formspree.io/f/xyklazgr" method="POST" onsubmit="handleSubmit(event)">
         <div class="form-group">
-          <input type="text" placeholder="Your Name" required />
+          <input type="text" name="name" placeholder="Your Name" required />
         </div>
         <div class="form-group">
-          <input type="email" placeholder="Your Email" required />
+          <input type="email" name="email" placeholder="Your Email" required />
         </div>
         <div class="form-group">
-          <select>
+          <select name="project_type">
             <option value="">Project Type</option>
             <option>Looker / GCP Dashboard</option>
             <option>Power BI Dashboard</option>
@@ -445,7 +445,7 @@
           </select>
         </div>
         <div class="form-group">
-          <textarea placeholder="Tell me about your project..." rows="5" required></textarea>
+          <textarea name="message" placeholder="Tell me about your project..." rows="5" required></textarea>
         </div>
         <button type="submit" class="btn-primary full-width">Send Message <i class="fas fa-paper-plane"></i></button>
         <div id="form-success" class="form-success" style="display:none">Message sent! I'll get back to you within 24 hours.</div>
