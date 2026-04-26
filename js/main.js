@@ -99,9 +99,23 @@ if (pbiCtx) {
 // ===== CONTACT FORM =====
 function handleSubmit(e) {
   e.preventDefault();
-  document.getElementById('form-success').style.display = 'block';
-  e.target.reset();
-  setTimeout(() => { document.getElementById('form-success').style.display = 'none'; }, 5000);
+  const form = e.target;
+  const data = new FormData(form);
+  fetch(form.action, {
+    method: 'POST',
+    body: data,
+    headers: { 'Accept': 'application/json' }
+  }).then(res => {
+    if (res.ok) {
+      document.getElementById('form-success').style.display = 'block';
+      form.reset();
+      setTimeout(() => { document.getElementById('form-success').style.display = 'none'; }, 5000);
+    } else {
+      alert('Oops! Something went wrong. Please try again or email directly.');
+    }
+  }).catch(() => {
+    alert('Oops! Something went wrong. Please try again or email directly.');
+  });
 }
 
 // ===== SMOOTH SCROLL for nav links =====
