@@ -42,7 +42,7 @@
       display: flex; align-items: center; padding: 0 1rem; height: 36px; gap: 1rem; flex-shrink: 0;
     }
     .page-tabs { display: flex; gap: 0; }
-    .page-tab { padding: 0 1rem; height: 36px; display: flex; align-items: center; font-size: 0.73rem; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+    .page-tab { padding: 0 1rem; height: 36px; display: flex; align-items: center; font-size: 0.73rem; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; text-decoration: none; }
     .page-tab.active { color: var(--text); border-bottom-color: var(--yellow); background: rgba(242,200,17,0.06); }
     .slicer-row { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
     .slicer {
@@ -162,10 +162,10 @@
 <!-- SUB-TOOLBAR -->
 <div class="subtoolbar">
   <div class="page-tabs">
-    <div class="page-tab active">Customer Analytics</div>
-    <div class="page-tab">Churn Model</div>
-    <div class="page-tab">Demographics</div>
-    <div class="page-tab">Executive Summary</div>
+    <a href="powerbi-demo.html" class="page-tab active">Customer Analytics</a>
+    <a href="powerbi-churn.html" class="page-tab">Churn Model</a>
+    <a href="powerbi-demographics.html" class="page-tab">Demographics</a>
+    <a href="powerbi-executive.html" class="page-tab">Executive Summary</a>
   </div>
   <div class="slicer-row">
     <div class="slicer active-filter"><i class="fas fa-calendar"></i> FY 2024 <i class="fas fa-caret-down"></i></div>

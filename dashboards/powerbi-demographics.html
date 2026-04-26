@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Power BI Demo – Demographics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #141414; --panel: #1c1c1c; --panel2: #232323;
+    --border: #2e2e2e; --text: #f3f3f3; --muted: #888;
+    --yellow: #f2c811; --orange: #e8721c; --blue: #118dff;
+    --green: #107c10; --green-light: #14a614;
+    --red: #d13438; --purple: #8764b8; --teal: #01b8aa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); font-size: 13px; min-height: 100vh; }
+  a { color: inherit; }
+
+  .ribbon {
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 16px; height: 44px; gap: 24px;
+  }
+  .ribbon-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: var(--yellow); }
+  .ribbon-logo i { font-size: 18px; }
+  .ribbon-tabs { display: flex; gap: 2px; }
+  .ribbon-tab {
+    padding: 6px 14px; border-radius: 4px; cursor: pointer;
+    font-size: 12px; color: var(--muted); border: none; background: transparent; transition: all 0.15s;
+  }
+  .ribbon-tab:hover { background: var(--panel2); color: var(--text); }
+  .ribbon-tab.active { background: var(--panel2); color: var(--text); }
+  .ribbon-badges { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+  .badge { padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+  .badge-dax { background: rgba(242,200,17,0.15); color: var(--yellow); border: 1px solid rgba(242,200,17,0.3); }
+  .badge-rls { background: rgba(17,141,255,0.15); color: var(--blue); border: 1px solid rgba(17,141,255,0.3); }
+  .btn-publish { background: var(--yellow); color: #000; border: none; padding: 5px 14px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+  .subtoolbar {
+    background: var(--panel2); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 16px; height: 36px; justify-content: space-between;
+  }
+  .page-tabs { display: flex; gap: 0; }
+  .page-tab {
+    padding: 0 16px; height: 36px; display: flex; align-items: center;
+    font-size: 12px; color: var(--muted); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.15s;
+    text-decoration: none; white-space: nowrap;
+  }
+  .page-tab:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  .page-tab.active { color: var(--yellow); border-bottom-color: var(--yellow); background: rgba(242,200,17,0.06); }
+  .slicer-row { display: flex; gap: 8px; align-items: center; }
+  .slicer {
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 4px; font-size: 11px;
+    color: var(--text); display: flex; align-items: center; gap: 6px;
+  }
+  .slicer i { color: var(--muted); font-size: 10px; }
+
+  .canvas-area { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .kpi-card { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+  .kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; }
+  .kpi-delta { font-size: 11px; margin-top: 4px; color: var(--muted); }
+
+  .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+  .side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .panel-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .panel-subtitle { font-size: 10px; color: var(--muted); margin-bottom: 12px; }
+  .chart-wrap { position: relative; }
+
+  .dax-inline {
+    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    font-size: 9px; font-weight: 600;
+    background: rgba(242,200,17,0.15); color: var(--yellow);
+    border: 1px solid rgba(242,200,17,0.3); margin-left: 6px; vertical-align: middle;
+  }
+
+  .data-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .data-table th { font-size: 10px; color: var(--muted); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.4px; }
+  .data-table td { font-size: 11px; padding: 7px 8px; border-bottom: 1px solid rgba(46,46,46,0.6); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .trend-up { color: var(--green-light); }
+  .trend-flat { color: var(--muted); }
+
+  .back-link {
+    position: fixed; bottom: 20px; left: 20px;
+    background: var(--yellow); color: #000;
+    padding: 8px 16px; border-radius: 5px;
+    font-size: 12px; font-weight: 600;
+    text-decoration: none; z-index: 999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .back-link:hover { background: #e0b80f; }
+</style>
+</head>
+<body>
+
+<div class="ribbon">
+  <div class="ribbon-logo">
+    <i class="fas fa-bolt"></i>
+    Power BI Desktop
+  </div>
+  <div class="ribbon-tabs">
+    <button class="ribbon-tab">File</button>
+    <button class="ribbon-tab active">Home</button>
+    <button class="ribbon-tab">Insert</button>
+    <button class="ribbon-tab">Modeling</button>
+    <button class="ribbon-tab">View</button>
+  </div>
+  <div class="ribbon-badges">
+    <span class="badge badge-dax">DAX Active</span>
+    <span class="badge badge-rls">RLS</span>
+    <button class="btn-publish">Publish</button>
+  </div>
+</div>
+
+<div class="subtoolbar">
+  <div class="page-tabs">
+    <a href="powerbi-demo.html" class="page-tab">Customer Analytics</a>
+    <a href="powerbi-churn.html" class="page-tab">Churn Model</a>
+    <a href="powerbi-demographics.html" class="page-tab active">Demographics</a>
+    <a href="powerbi-executive.html" class="page-tab">Executive Summary</a>
+  </div>
+  <div class="slicer-row">
+    <div class="slicer"><i class="fas fa-calendar-alt"></i> FY 2024</div>
+    <div class="slicer"><i class="fas fa-map-marker-alt"></i> All Provinces</div>
+    <div class="slicer"><i class="fas fa-layer-group"></i> All Segments</div>
+    <div class="slicer"><i class="fas fa-shield-alt"></i> Personal Lines</div>
+  </div>
+</div>
+
+<div class="canvas-area">
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Avg Age</div>
+      <div class="kpi-value" style="color:var(--blue)">41.3</div>
+      <div class="kpi-delta">Years · customer base</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">% Female</div>
+      <div class="kpi-value" style="color:var(--teal)">54.2%</div>
+      <div class="kpi-delta">Gender split</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">% Urban</div>
+      <div class="kpi-value" style="color:var(--yellow)">68.4%</div>
+      <div class="kpi-delta">Geographic concentration</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">% Homeowner</div>
+      <div class="kpi-value" style="color:var(--green-light)">62.1%</div>
+      <div class="kpi-delta">Property ownership</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg Household Income</div>
+      <div class="kpi-value" style="color:var(--orange)">$84.2K</div>
+      <div class="kpi-delta">Annual household</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Multi-Policy Rate</div>
+      <div class="kpi-value" style="color:var(--purple)">48.7%</div>
+      <div class="kpi-delta">Bundle penetration</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-title">Customer Distribution by Age Band</div>
+      <div class="panel-subtitle">Total active policyholders · FY 2024</div>
+      <div class="chart-wrap"><canvas id="ageBandChart" height="200"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Geographic Distribution</div>
+      <div class="panel-subtitle">Customers by province · all lines</div>
+      <div class="chart-wrap"><canvas id="provinceChart" height="200"></canvas></div>
+    </div>
+  </div>
+
+  <div class="side-grid">
+    <div class="panel">
+      <div class="panel-title">Gender &amp; Marital Status</div>
+      <div class="panel-subtitle">Customer count by gender and relationship status</div>
+      <div class="chart-wrap"><canvas id="genderMaritalChart" height="190"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Policy Type Mix <span class="dax-inline">DAX</span></div>
+      <div class="panel-subtitle">Active policies by product line · FY 2024</div>
+      <div class="chart-wrap"><canvas id="policyMixChart" height="190"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Income Band vs Annual Premium</div>
+      <div class="panel-subtitle">Scatter analysis · income tier segmentation</div>
+      <div class="chart-wrap"><canvas id="scatterChart" height="190"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Demographics Summary</div>
+      <div class="panel-subtitle">Key metrics vs industry benchmarks</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Attribute</th>
+            <th>Value</th>
+            <th>vs Industry Avg</th>
+            <th>Trend</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Avg Age</td>
+            <td>41.3</td>
+            <td style="color:var(--orange)">+2.1 yrs</td>
+            <td class="trend-up">↑</td>
+          </tr>
+          <tr>
+            <td>Female %</td>
+            <td>54.2%</td>
+            <td style="color:var(--green-light)">+4.3pp</td>
+            <td class="trend-flat">→</td>
+          </tr>
+          <tr>
+            <td>Urban %</td>
+            <td>68.4%</td>
+            <td style="color:var(--green-light)">+1.2pp</td>
+            <td class="trend-up">↑</td>
+          </tr>
+          <tr>
+            <td>Multi-Policy</td>
+            <td>48.7%</td>
+            <td style="color:var(--green-light)">+8.9pp</td>
+            <td class="trend-up">↑</td>
+          </tr>
+          <tr>
+            <td>Avg Tenure</td>
+            <td>4.7 yrs</td>
+            <td style="color:var(--green-light)">+0.6 yrs</td>
+            <td class="trend-up">↑</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<a href="../index.html" class="back-link">← Back to Portfolio</a>
+
+<script>
+const ct = {
+  plugins: {
+    legend: { labels: { color: '#888', font: { family: 'Inter', size: 11 } } },
+    tooltip: { backgroundColor: '#1c1c1c', titleColor: '#f3f3f3', bodyColor: '#888', borderColor: '#2e2e2e', borderWidth: 1 }
+  },
+  scales: {
+    x: { grid: { color: '#2e2e2e' }, ticks: { color: '#888', font: { family: 'Inter', size: 10 } } },
+    y: { grid: { color: '#2e2e2e' }, ticks: { color: '#888', font: { family: 'Inter', size: 10 } } }
+  }
+};
+
+new Chart(document.getElementById('ageBandChart'), {
+  type: 'bar',
+  data: {
+    labels: ['18–25', '26–35', '36–45', '46–55', '56–65', '65+'],
+    datasets: [{
+      label: 'Customers',
+      data: [6200, 18400, 24800, 22100, 16900, 9840],
+      backgroundColor: [
+        'rgba(17,141,255,0.45)',
+        'rgba(17,141,255,0.55)',
+        'rgba(17,141,255,0.75)',
+        'rgba(17,141,255,0.65)',
+        'rgba(17,141,255,0.55)',
+        'rgba(17,141,255,0.40)'
+      ],
+      borderColor: '#118dff',
+      borderWidth: 1,
+      borderRadius: 3
+    }]
+  },
+  options: {
+    ...ct,
+    indexAxis: 'y',
+    plugins: { ...ct.plugins, legend: { display: false } },
+    scales: {
+      x: { grid: { color: '#2e2e2e' }, ticks: { color: '#888', font: { family: 'Inter', size: 10 } } },
+      y: { grid: { color: 'transparent' }, ticks: { color: '#888', font: { family: 'Inter', size: 10 } } }
+    }
+  }
+});
+
+new Chart(document.getElementById('provinceChart'), {
+  type: 'bar',
+  data: {
+    labels: ['MB', 'SK', 'ON', 'BC', 'AB', 'QC'],
+    datasets: [{
+      label: 'Customers',
+      data: [34280, 18420, 22100, 12840, 6400, 4200],
+      backgroundColor: 'rgba(232,114,28,0.7)',
+      borderColor: '#e8721c',
+      borderWidth: 1,
+      borderRadius: 3
+    }]
+  },
+  options: { ...ct, plugins: { ...ct.plugins, legend: { display: false } } }
+});
+
+new Chart(document.getElementById('genderMaritalChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Single', 'Married', 'Divorced', 'Widowed'],
+    datasets: [
+      { label: 'Female', data: [8200, 24100, 9400, 2100], backgroundColor: 'rgba(135,100,184,0.7)', borderRadius: 3 },
+      { label: 'Male', data: [7100, 22800, 7900, 1240], backgroundColor: 'rgba(1,184,170,0.7)', borderRadius: 3 }
+    ]
+  },
+  options: { ...ct }
+});
+
+new Chart(document.getElementById('policyMixChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Personal Auto', 'Home+Auto Bundle', 'Home Only', 'Tenant', 'Commercial', 'Life'],
+    datasets: [{
+      label: 'Active Policies',
+      data: [38240, 28140, 18600, 13900, 6400, 2960],
+      backgroundColor: 'rgba(242,200,17,0.7)',
+      borderColor: '#f2c811',
+      borderWidth: 1,
+      borderRadius: 3
+    }]
+  },
+  options: {
+    ...ct,
+    indexAxis: 'y',
+    plugins: { ...ct.plugins, legend: { display: false } },
+    scales: {
+      x: { grid: { color: '#2e2e2e' }, ticks: { color: '#888', font: { family: 'Inter', size: 10 } } },
+      y: { grid: { color: 'transparent' }, ticks: { color: '#888', font: { family: 'Inter', size: 9 } } }
+    }
+  }
+});
+
+function randRange(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+const lowIncome = Array.from({length: 30}, () => ({ x: randRange(20000, 50000), y: randRange(800, 1200) }));
+const midIncome = Array.from({length: 40}, () => ({ x: randRange(50000, 100000), y: randRange(1200, 2200) }));
+const highIncome = Array.from({length: 20}, () => ({ x: randRange(100000, 200000), y: randRange(2000, 4000) }));
+
+new Chart(document.getElementById('scatterChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      { label: 'Low Income (<$50K)', data: lowIncome, backgroundColor: 'rgba(17,141,255,0.6)', pointRadius: 4 },
+      { label: 'Mid Income ($50–100K)', data: midIncome, backgroundColor: 'rgba(242,200,17,0.6)', pointRadius: 4 },
+      { label: 'High Income (>$100K)', data: highIncome, backgroundColor: 'rgba(1,184,170,0.7)', pointRadius: 4 }
+    ]
+  },
+  options: {
+    ...ct,
+    scales: {
+      x: { grid: { color: '#2e2e2e' }, ticks: { color: '#888', font: { family: 'Inter', size: 9 }, callback: v => '$' + (v/1000).toFixed(0) + 'K' } },
+      y: { grid: { color: '#2e2e2e' }, ticks: { color: '#888', font: { family: 'Inter', size: 9 }, callback: v => '$' + v } }
+    }
+  }
+});
+</script>
+</body>
+</html>
